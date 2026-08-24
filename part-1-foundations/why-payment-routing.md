@@ -30,6 +30,8 @@ flowchart TB
 所有交易 → PSP A
 ```
 
+![单 PSP 架构把所有支付隐含地导向 PSP A](../assets/why-payment-routing-illustrations/01-single-provider-one-way.png)
+
 这个决定只是隐含在配置、SDK 调用或业务代码中。只要所有交易都满足同一组假设，它就不需要成为一个独立组件：
 
 - PSP A 支持商户需要的国家、币种和支付方式；
@@ -66,6 +68,8 @@ flowchart TB
 > 哪些 Provider 在合同、合规和技术上能够处理这笔交易？
 
 只有进入候选集的 Provider，才有资格比较成功率、成本和延迟。一个手续费很低但不支持当前币种的 PSP，得分再高也不应该被选中。
+
+![路由先用币种与认证能力筛出可处理交易的 Provider](../assets/why-payment-routing-illustrations/02-provider-eligibility-key.png)
 
 ## 2.3 第二条裂缝：可用性不能由一个外部依赖决定
 
@@ -182,6 +186,8 @@ flowchart LR
 ```
 
 硬编码路由的拐点通常不是某个确定的 Provider 数量，而是**路由策略的变更节奏开始快于支付应用的发布节奏**。当运营需要安全地预览、审批、发布和回滚策略，工程团队需要独立演进决策逻辑时，把 Routing Policy 从支付执行代码中抽离，才开始产生净收益。
+
+![不断叠加的市场例外让硬编码路由变成难以维护的规则缠结](../assets/why-payment-routing-illustrations/03-hardcoded-routing-tangle.png)
 
 ## 2.8 Routing Layer 的出现
 
@@ -312,7 +318,11 @@ Fallback 是第一次 Attempt 失败后的又一次路由决定。它不能只�
 | PSP B | 是 | 是 | 91% | 6.40 BRL | Healthy |
 | PSP C | 是 | 否 | 93% | 5.90 BRL | Healthy |
 
-PSP C 的原始成功率最高、成本最低，但它无法完成这笔交易所需的认证，因此在 Eligibility 阶段被排除。PSP A 和 PSP B 都可用；PSP B 同时具有本地收单、更高的分段成功率和更低的估算成本，于是成为首选。这个决定的 reason code 可以是：
+PSP C 的原始成功率最高、成本最低，但它无法完成这笔交易所需的认证，因此在 Eligibility 阶段被排除。PSP A 和 PSP B 都可用；PSP B 同时具有本地收单、更高的分段成功率和更低的估算成本，于是成为首选。
+
+![PSP C 即使分数诱人，也会因缺少所需 3DS 能力先被硬约束排除](../assets/why-payment-routing-illustrations/04-hard-constraints-before-scoring.png)
+
+这个决定的 reason code 可以是：
 
 ```text
 selected: PSP_B
@@ -433,6 +443,8 @@ sequenceDiagram
 - 请求中的 merchant/provider reference，用于 Provider 支持的关联或搜索；Provider 创建交易后返回的 transaction ID，则用于状态查询以及后续 Capture、Void 或 Refund。这些引用与幂等键不是同一个标识，响应丢失时也可能尚未取得 transaction ID。
 
 只有当原 Attempt 得到明确、可重新路由的失败，或系统能证明请求没有被 Provider 接受处理时，才应创建指向另一 Provider 的新 Attempt。部分 `5xx`、connection reset 和 socket timeout 都可能属于 Unknown；明确的 Issuer decline 也不等于可以任意重试。具体规则还必须结合支付方式、Issuer advice、Card Network 当期规则、retry budget 和 Provider API 语义，不能依赖一张通用的 HTTP 状态码表。
+
+![PSP B 返回结果未知时，系统锁住通往 PSP A 的切换并先查询原交易状态](../assets/why-payment-routing-illustrations/05-unknown-state-stop-fallback.png)
 
 ## 2.12 生产环境中的失败模式
 
