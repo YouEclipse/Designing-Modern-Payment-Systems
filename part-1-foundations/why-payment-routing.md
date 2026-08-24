@@ -399,6 +399,8 @@ func Route(candidates []Candidate) (Decision, error) {
 
 后续章节会把每一步替换为可独立测试和演进的组件。
 
+配套代码仓库中的[真实 Router 实现](https://github.com/YouEclipse/payments/tree/master/services/router/internal/routing)目前实现了可运行的 Eligibility 硬约束过滤与版本化静态策略排序，并保留候选排除原因；完整规则求值、成功率、成本与风险评分会随后续章节继续演进。
+
 ## 2.11 Fallback 为什么必须理解 Payment Attempt
 
 设 PSP B 被选中后，Authorization 请求超时。下面的时序展示了最危险的一种情况：

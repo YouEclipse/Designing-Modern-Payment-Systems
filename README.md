@@ -22,6 +22,12 @@ Problem → Simple Design → Problems at Scale → Production Design → Trade-
 
 JSON、SQL、Mermaid 和少量伪代码仍会分别用于表达 API 数据、存储模型、架构时序和决策公式；它们只承担对应的描述职责，不作为另一套实现语言。
 
+## 配套 Go 支付系统
+
+本书同步维护一个可运行的微服务实现：[YouEclipse/payments](https://github.com/YouEclipse/payments)。它不是把章节里的片段简单拼在一起，而是用 Payment、Router、Provider Gateway 和仅限开发/测试的 Provider Simulator 跑通真实 PostgreSQL 上的纵向闭环。
+
+当前实现聚焦 tokenized card 的 automatic capture，并把超时视为 `UNKNOWN`：系统会沿用同一个 Provider Operation 查询或等待 webhook，不会因为没有收到响应就盲目切换 PSP。后续章节新增状态、规则、Provider Adapter、对账和运营能力时，配套仓库也会同步演进。Simulator 不处理真实资金；接入 live PSP 仍需要真实 connector、密钥管理、安全合规与运营准备。
+
 ## 这本书适合谁
 
 本书主要面向：
