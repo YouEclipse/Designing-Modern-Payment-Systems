@@ -89,3 +89,7 @@ JSON、SQL、Mermaid 和少量伪代码仍会分别用于表达 API 数据、存
 - 第一次接触支付系统：建议按[目录](SUMMARY.md)顺序阅读。
 - 已有支付接入经验：可以先阅读样章[《为什么需要 Payment Routing》](part-1-foundations/why-payment-routing.md)，再进入 Routing Engine 与 Reliability 两部分。
 - 正在设计多 PSP 平台：建议重点阅读系统边界、Eligibility、幂等、fallback、决策审计和 Reconciliation 相关章节。
+
+## 项目维护
+
+后续章节统一遵循[写作与实现工作流](WORKFLOW.md)，把章节正文、Go 微服务增量、支付语义审计、图表配图、真实数据库验证和双仓库发布作为同一个交付闭环。
