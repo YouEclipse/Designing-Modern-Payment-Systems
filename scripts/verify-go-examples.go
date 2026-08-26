@@ -110,7 +110,14 @@ func verify(requested []string) error {
 	if len(selected) == 0 {
 		return fmt.Errorf("no Go examples selected")
 	}
-	work, err := os.MkdirTemp("", "payment-book-go-examples-*")
+	temporaryRoot, err := filepath.Abs(".validation-tmp")
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(temporaryRoot, 0700); err != nil {
+		return err
+	}
+	work, err := os.MkdirTemp(temporaryRoot, "payment-book-go-examples-*")
 	if err != nil {
 		return err
 	}
@@ -164,6 +171,7 @@ func verify(requested []string) error {
 	for _, args := range [][]string{{"mod", "tidy"}, {"test", "-count=1", "-race", "-p", "2", "./..."}, {"vet", "-p", "2", "./..."}} {
 		command := exec.Command("go", args...)
 		command.Dir, command.Stdout, command.Stderr = work, os.Stdout, os.Stderr
+		command.Env = append(os.Environ(), "TMPDIR="+temporaryRoot, "GOTMPDIR="+temporaryRoot)
 		if err := command.Run(); err != nil {
 			return fmt.Errorf("go %s: %w", strings.Join(args, " "), err)
 		}

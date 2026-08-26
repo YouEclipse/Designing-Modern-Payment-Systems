@@ -6,10 +6,12 @@
 
 | 内容 | 本地路径 | GitHub |
 | --- | --- | --- |
-| 中文书稿与插图 | `/Users/yoyo/Documents/ChatGPT/payments` | [YouEclipse/Designing-Modern-Payment-Systems](https://github.com/YouEclipse/Designing-Modern-Payment-Systems) |
-| Go 微服务实现 | `/Users/yoyo/Documents/ChatGPT/payments-system` | [YouEclipse/payments](https://github.com/YouEclipse/payments) |
+| 中文书稿与插图 | `/Users/yoyo/workspace/payment-book-active` | [YouEclipse/Designing-Modern-Payment-Systems](https://github.com/YouEclipse/Designing-Modern-Payment-Systems) |
+| Go 微服务实现 | `/Users/yoyo/workspace/payments-system-active` | [YouEclipse/payments](https://github.com/YouEclipse/payments) |
 
 开始前必须分别确认 Git root、工作树、remote 和分支，保留已有修改。结束时分别提交、推送并核对本地与远端 SHA。
+
+本项目所有新产物都放在 `~/workspace` 下。章节、图片、脚本与正式验证报告进入对应仓库；临时 module、渲染文件和隔离 worktree 使用书仓 `.validation-tmp/` 或 `~/workspace/.payment-book-tmp/`。Go/Chromium 等验证子进程的临时目录也指向这些位置，不将本书产物写回 Documents/iCloud 或系统 `/tmp`。原有 Documents 副本保留，但不再作为活动工作树。
 
 ## 2. 每章先定义交付契约
 

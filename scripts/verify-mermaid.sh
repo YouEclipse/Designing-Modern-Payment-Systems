@@ -22,7 +22,10 @@ else
   renderer=(npx --yes "@mermaid-js/mermaid-cli@${cli_version}")
 fi
 
-work_dir=$(mktemp -d "${TMPDIR:-/tmp}/payment-book-mermaid.XXXXXX")
+book_root=$(cd "$(dirname "$0")/.." && pwd -P)
+temporary_root="$book_root/.validation-tmp"
+mkdir -p "$temporary_root"
+work_dir=$(mktemp -d "$temporary_root/payment-book-mermaid.XXXXXX")
 cleanup() {
   find "$work_dir" -type f -delete 2>/dev/null || true
   rmdir "$work_dir" 2>/dev/null || true
@@ -35,7 +38,7 @@ render_one() {
   local log=$3
   local renderer_pid elapsed exit_code
 
-  "${renderer[@]}" -i "$input" -o "$output" >"$log" 2>&1 &
+  TMPDIR="$temporary_root" "${renderer[@]}" -i "$input" -o "$output" >"$log" 2>&1 &
   renderer_pid=$!
   elapsed=0
 
