@@ -129,7 +129,8 @@ CI 失败后读取精确日志，修复根因并补回归测试，重新推送�
 书稿仓库还要检查：
 
 - GitBook 本地 Markdown 链接全部存在；
-- Mermaid 能实际解析；
+- Go 示例登记到 `scripts/go-examples/manifest.json`，用 `go run scripts/verify-go-examples.go <chapter.md>...` 从当前正文提取并执行 compile/race/vet；新增未登记代码块必须失败，临时目录里曾经编译过不等于可重复门禁；
+- Mermaid 用 `scripts/verify-mermaid.sh <chapter.md>...` 抽取并实际渲染；不能以人工阅读或代码块计数代替；
 - 插图尺寸、路径和 Markdown 嵌入正确；
 - 术语表、SUMMARY、README 与章节链接同步；
 - 不把骨架章节、Simulator 或 PSP sandbox 夸大成完成的 live 系统。

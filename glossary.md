@@ -22,6 +22,10 @@
 
 多个 Region 同时承载生产流量的部署方式。用于支付路由时，必须额外处理 Intent 所有权、全局幂等、配置版本和跨区 Fallback，不能只复制无状态服务。
 
+### 实际成本（Actual Cost）
+
+来自 Provider 结算行、费用明细或已确认经济事实的成本。必须保存来源、币种、匹配范围和修订关系，不应覆盖决策时的 Expected Cost；尚未到账或匹配不完整的值不能伪装成最终成本。
+
 ### 授权（Authorization）
 
 对一笔支付请求进行批准或拒绝的过程，通常由 Issuer 决策；在特定条件下，Card Network 或处理方也可能按既定规则进行 stand-in processing。批准通常表示额度或资金被预留，并不等于 Merchant 已经收到资金，也不等于后续 Settlement 必然完成。
@@ -62,6 +66,14 @@ PCI DSS 定义的受保护账户数据，至少包含完整 PAN；与 PAN 一同
 
 记录每条 Candidate 支持的国家、币种、Payment Method、Capture Mode、认证方式等能力的版本化数据。它是 Eligibility 的重要输入，但不等同于动态 Provider Health。
 
+### 连接修订（Connection Revision）
+
+对一份执行连接配置的不可变引用。Attempt、Operation 和 Gateway 固定同一 ID/revision，配置轮换创建新修订，不能把旧修订重新绑定到另一账户或 endpoint；旧 UNKNOWN 不随新配置迁移。
+
+### 配置包（Config Bundle）
+
+将 Rule、Capability、Fee、Experiment、Model 等不可变 artifact 引用和摘要固定在一起的发布单元。验证、审批与运行实例加载必须针对同一个 bundle；运行时原子切换，不能逐个替换半套配置。
+
 ### 请款（Capture）
 
 在 Authorization 之后确认全部或部分已授权金额、进入 Clearing/Settlement 的操作。自动 Capture 与手动 Capture 的支持差异会影响 Provider Eligibility。
@@ -84,7 +96,7 @@ PCI DSS 定义的受保护账户数据，至少包含完整 PAN；与 PAN 一同
 
 ### 连接器（Connector）
 
-平台中代表一组具体 Provider 接入配置的执行单元，通常包含 API 版本、Endpoint、Credential、Merchant Account 和 Region 等信息。同一 Provider 可以有多个 Connector。
+某套 Provider 协议、API 版本和字段/状态映射的实现。它不是包含账户、区域、endpoint 与 credential scope 的完整 Provider Connection；同一 Connector 实现可以服务于多个精确连接，但不能自行替换连接或路由。
 
 ### 控制平面（Control Plane）
 
@@ -112,11 +124,23 @@ Authorization 未获批准的业务结果。Issuer / Network Decline 应与授�
 
 结构化表达 Candidate 被排除、加减分或最终胜出的原因。它比自由文本日志更适合审计、指标聚合和稳定的 API 契约。
 
+### 摘要（Digest）
+
+对明确规范化后的 Context、artifact 或 Decision 计算的内容指纹。摘要能检查内容一致性，但本身不证明发布者身份、审批授权或事实正确性；不能用相同版本名掩盖不同内容。
+
 ## E
 
 ### 适格性过滤（Provider Eligibility）
 
 根据能力、合同、合规和不可用状态等硬约束，从全部 Provider 通道中筛出可以处理当前交易的 Candidate Set。`Unavailable` 或 `CircuitOpen` 可以构成硬排除；`Degraded` 通常作为评分惩罚或流量限制。Eligibility 先于偏好评分执行。
+
+### 有效样本量（Effective Sample Size，ESS）
+
+衡量加权样本实际信息量的诊断量，常用形式为 `(Σw)² / Σw²`。少数极大权重可让记录很多但 ESS 很小；ESS 不能修复缺少策略支持、错误 propensity 或未成熟结果。
+
+### 实验暴露（Experiment Exposure）
+
+业务单元真正进入实验处理的事件。Assignment 仅表示分桶，不等于候选已执行；shadow 也不产生资金暴露。指标需分别保存分配、决策、执行和结果，避免以“只统计成功送达的请求”选择样本。
 
 ### 期望成本（Expected Cost）
 
@@ -127,6 +151,10 @@ Authorization 未获批准的业务结果。Issuer / Network Decline 应与授�
 ### 故障转移路由（Fallback Routing）
 
 前一次 Attempt 得到明确且允许重新路由的结果后，选择另一条 eligible route 创建新 Attempt 的恢复过程。同一 Provider 上使用相同 operation identity 的重试属于 Retry，不是 Fallback；Unknown 状态下不能直接跨 Provider Fallback。
+
+### 隔离令牌（Fencing Token / Ownership Epoch）
+
+随执行所有权转移而递增的代数。写事务和副作用入口验证当前 epoch，拒绝旧 owner；DNS、租约过期或 worker 存活都不能替代该检查。它不能撤回已经发到 Provider 的请求，仍须恢复原 Operation。
 
 ### 外汇转换（Foreign Exchange，FX）
 
@@ -156,6 +184,10 @@ Authorization 未获批准的业务结果。Issuer / Network Decline 应与授�
 
 由延迟、超时、技术错误和主动探测等信号形成的运行时状态。它应带维度、时间戳和置信度，不能与 Authorization Rate 简单等同。
 
+### 归属区域（Home Region）
+
+负责某个 Intent 权威状态与执行归属的区域。它不同于接收 HTTP 的 ingress Region，也不同于实际 worker 所在 execution Region 和外部 Provider Region。流量转移不自动转移资金写入权。
+
 ## I
 
 ### 幂等（Idempotency）
@@ -166,6 +198,14 @@ Authorization 未获批准的业务结果。Issuer / Network Decline 应与授�
 
 调用方为一次逻辑操作提供的稳定标识。系统必须定义它的作用域、有效期、参数是否可变，以及相同 Key 对应不同请求时的错误语义。
 
+### 完整性状态（Integrity Status）
+
+表示聚合内证据是否能够安全自动解释的独立维度。本书使用 `healthy` / `review_required`；进入 review 不抹掉已 captured 事实，也不是把 `succeeded` 改成 `failed`。
+
+### Inbox / Outbox
+
+分别用于记录已接收消息身份与事务内待发布事件的持久化模式。与领域状态在同一事务中提交，处理进程崩溃窗口；投递仍可能重复，下游仍须按事件 ID 和内容验证幂等，不能宣称端到端恰好一次。
+
 ### 发卡机构（Issuer）
 
 向 Customer 发行银行卡或支付账户，并在 Authorization 时根据账户状态、资金、风险和规则批准或拒绝交易的机构。
@@ -175,6 +215,10 @@ Authorization 未获批准的业务结果。Issuer / Network Decline 应与授�
 ### 账本（Ledger）
 
 以可审计分录记录资金权利义务变化的系统。Router 可以引用支付与结算结果，但不应把 Routing Decision Store 当作资金 Ledger。
+
+### 最近已验证配置（Last-Known-Good，LKG）
+
+最近一次通过完整校验并成功加载的配置。控制平面暂时不可用时可按有效期与安全边界继续使用；配置过期、强制停用或缺少必需 artifact 时，不能以 LKG 名义无限运行。
 
 ## M
 
@@ -192,6 +236,10 @@ Customer 用于完成支付的工具或网络，例如银行卡、数字钱包�
 
 ## O
 
+### 离线策略评估（Off-Policy Evaluation，OPE）
+
+使用历史行为策略的数据估计另一目标策略的结果。需明确 reward、成熟窗口、记录的行动概率和支持集合；目标策略会选择但历史概率为零的行动，不能靠重加权识别。结果不是未经线上受控实验验证的因果提升承诺。
+
 ### 支付编排器（Payment Orchestrator）
 
 管理 Payment Intent 生命周期并协调 Risk、Router、Provider Adapter、异步事件和恢复流程的组件。Router 通常只负责产生或更新 Route Plan，不拥有完整支付状态机。
@@ -200,11 +248,11 @@ Customer 用于完成支付的工具或网络，例如银行卡、数字钱包�
 
 ### 主账号（Primary Account Number，PAN）
 
-用于识别银行卡账户的号码。按 PCI DSS 术语，PAN 属于持卡人数据（Cardholder Data，CHD），但不等同于授权后禁止保存的敏感认证数据（Sensitive Authentication Data，SAD）；Routing Context 应优先使用 Token 或必要的派生属性，并遵守适用的存储、保护和显示要求。
+用于识别银行卡账户的号码。PAN 属于 CHD，不等同于 SAD；本书 Routing Context 只接收必要派生属性，不携带 PAN、CVV 或可用于执行支付的 Token。Token 只在受控 Payment/Gateway 边界流动，不能因其不是原始卡号就进入日志或 Decision。[PCI SSC Glossary](https://www.pcisecuritystandards.org/glossary/)
 
 ### 支付尝试（Payment Attempt）
 
-为完成同一个 Payment Intent 而进行的一次受控执行。Retry 或 Fallback 是否创建新 Attempt 取决于操作身份和 Provider 语义，但每次可产生副作用的尝试都必须可追踪。
+为完成同一个 Payment Intent 而进行的一次受控执行，固定支付方式与 Provider Connection。对同一逻辑 Operation 的网络 Retry 不创建新 Attempt；只有前一 Attempt 已明确无副作用且策略允许的 Fallback 才能创建新 Attempt。UNKNOWN 阻断新资金路径。
 
 ### 支付意图（Payment Intent）
 
@@ -226,6 +274,22 @@ Merchant 希望收取某个金额与币种的一次业务目标。它可以经�
 
 把平台统一的支付操作映射为某个 Provider API，并归一化响应、错误类别和 webhook 事件的适配层。Adapter 必须显式暴露 Idempotency 的作用域、保留期、并发和响应语义差异，不能用统一接口将其隐藏；它执行已选路线，不应暗中实施独立 Routing Policy。
 
+### Provider Connection
+
+可精确执行的一份 Provider / Merchant Account / Connector / Region 配置，包含由 Gateway 掌握的 endpoint 与 credential scope。Router 返回非秘密引用，Payment 固定 ID、revision 与外部 namespace，执行层不能临时二次选择。
+
+### Provider Namespace
+
+Adapter 根据供应商契约声明的外部身份冲突域，不能只按 Provider 品牌名推断。Reference、event、幂等键若有不同作用域，应分别表达；同 namespace 的连接不因此共享 webhook 认证权限。
+
+### Provider Operation
+
+一次逻辑资金操作，如 SALE、AUTHORIZE、CAPTURE、VOID、REFUND。内部 Operation ID、Provider key、语义 payload 和精确执行连接固定；网络请求可多次，资金身份仍是一个。正文泛称 Provider Request 时需区分逻辑操作与一次传输。
+
+### 行动概率（Propensity）与支持集合（Support）
+
+Propensity 是行为策略在当时 Context 下选择某行动的概率，不是该行动的预测成功率。OPE 要求目标策略的整个行动支持集合都被日志策略覆盖，而不只是检查已观察行动的概率大于零。
+
 ## R
 
 ### 对账（Reconciliation）
@@ -238,7 +302,7 @@ Merchant 对已 Capture 的全部或部分金额发起返还的操作。Refund �
 
 ### 重试（Retry）
 
-对同一逻辑操作再次发起执行。支付 Retry 必须考虑前一次结果是否确定、Provider 幂等能力、总 Deadline 与 Retry Budget；它不等同于切换 Provider 的 Fallback。
+对同一逻辑操作再次发起执行。支付 Retry 固定原 Operation、Provider/账户/Region/修订、幂等键与语义 payload，并受结果确定性、Provider 契约、总 Deadline 与 Retry Budget 约束；它不创建新 Attempt，也不等同于 Fallback。
 
 ### 风险感知路由（Risk-Aware Routing）
 
@@ -246,7 +310,7 @@ Merchant 对已 Capture 的全部或部分金额发起返还的操作。Refund �
 
 ### 路由上下文（Routing Context）
 
-一次 Routing Decision 所需的版本化输入，包括 Merchant、Transaction、Payment Method、Risk 与运行时信号等。Context 应可验证、可审计，并遵循数据最小化。
+由 Payment ContextBuilder 为一次决策固定的版本化最小输入，包含业务字段和必要非秘密派生属性。每个观察值带来源、版本、时间与 known/unknown/stale 等状态；缺失不能伪装成默认真值。动态 Health/Performance 可用独立只读快照参与决策，但都需记录版本，不能混入未审计的实时查询。
 
 ### 路由决策（Routing Decision）
 
@@ -268,6 +332,10 @@ Router 对某个 Payment Attempt 给出的 Candidate 选择、理由和必要的
 
 为 Routing Policy 及相关配置提供编辑、验证、回放、审批、发布、灰度和回滚能力的控制平面系统。
 
+### 恢复点目标 / 恢复时间目标（RPO / RTO）
+
+分别表达可接受的数据丢失窗口与恢复服务的目标耗时。支付 failover 必须单独评估执行身份、幂等与资金证据的 RPO；总体数据库复制延迟不是可安全重放未知资金操作的证明。
+
 ## S
 
 ### 敏感认证数据（Sensitive Authentication Data，SAD）
@@ -285,6 +353,18 @@ Card Network 对交易或相关服务收取的费用。其结构可能复杂且�
 ### 评分（Provider Scoring）
 
 在已满足硬约束的 Candidate 之间，根据成功率、成本、延迟、风险等目标计算相对偏好的过程。评分不能覆盖 Eligibility 和 Guardrail。
+
+### 影子决策（Shadow Decision）
+
+在真实请求的相同快照上计算 challenger 决策，用于比较分歧和可运行性，但不 dispatch、不创建第二 Operation，也不把未执行候选的结果当作已观察结果。
+
+### 副作用确定性（Side-Effect Certainty）
+
+描述操作是否确定尚未发生、可能发生或已确认发生的证据维度。它与 HTTP 错误、业务成功率和 Retryable 不同；`retryable=true` 不代表可以换 PSP，`not_found` 也只有在明确查询契约下才可能成为无副作用证据。
+
+### 结算行（Settlement Line）
+
+来自 Provider 报表的不可变经济事实，携带文件/行身份、外部 namespace、reference、金额、币种和类型。重复同内容幂等，更正追加新事实；它不是 Payment Intent 的新状态，也不是会计分录的替代品。
 
 ### 软拒绝（Soft Decline）
 

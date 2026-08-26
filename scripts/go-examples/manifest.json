@@ -1,0 +1,34 @@
+{
+  "go_version": "1.25.0",
+  "requires": {},
+  "groups": [
+    {
+      "name": "chapter01_lifecycle",
+      "source": "part-1-foundations/payment-lifecycle.md",
+      "blocks": [
+        {"number": 1, "file": "sale.go"},
+        {"number": 2, "file": "anti_example.go", "prefix": "package lifecycle\nimport \"context\"\nfunc naiveConfirm(ctx context.Context, gateway Gateway, command SaleCommand, markPaymentFailed func(string) error, markPaymentPaid func(string,string) error) error {\n", "suffix": "}\n"},
+        {"number": 3, "file": "projection.go"}
+      ],
+      "tests": ["tests/chapter01/projection_test.go"]
+    },
+    {
+      "name": "chapter03_naive",
+      "source": "part-1-foundations/routing-system-boundaries.md",
+      "blocks": [{"number": 1, "file": "naive.go"}],
+      "tests": []
+    },
+    {
+      "name": "chapter03_contract",
+      "source": "part-1-foundations/routing-system-boundaries.md",
+      "blocks": [{"number": 2, "file": "contract.go"}],
+      "tests": []
+    },
+    {
+      "name": "chapter03_orchestration",
+      "source": "part-1-foundations/routing-system-boundaries.md",
+      "blocks": [{"number": 3, "file": "pin.go"}],
+      "tests": ["tests/chapter03/pin_test.go"]
+    }
+  ]
+}
