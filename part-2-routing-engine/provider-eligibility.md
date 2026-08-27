@@ -557,7 +557,7 @@ last-known-good 只在它仍处于有效期时是“good”。无限延长会让
 
 ## 6.8 配套 Go 系统的窄纵向增量
 
-本章的[固定实现](https://github.com/YouEclipse/payments/tree/6583e4dc37b391a8ecbe51830780717f1c0f8843/services/router/internal/capability)以 `capability_catalog.v1` 为输入，不要求先建成通用配置平台。`Compile` 要求完整 Candidate manifest 与逐一对应的 Descriptor，拒绝同一执行连接的别名、重复 ID、半快照、非法来源和时间区间；随后复制并规范化整版内容，形成不可变 Catalog 与摘要。
+本章的[固定实现](https://github.com/YouEclipse/payments/tree/bc4afde24da708d22f67da72a90a1557b1477173/services/router/internal/capability)以 `capability_catalog.v1` 为输入，不要求先建成通用配置平台。`Compile` 要求完整 Candidate manifest 与逐一对应的 Descriptor，拒绝同一执行连接的别名、重复 ID、半快照、非法来源和时间区间；随后复制并规范化整版内容，形成不可变 Catalog 与摘要。
 
 首批 wire 约束有六组：Currency、明确 country field 对应的国家、Payment Method、Operation、Capture Method 和 credential domain，另有 enabled 与 Descriptor 有效期。Country field 只能选 `merchant.country` 或 `payment_method_context.issuer_country`，不能在未知时偷偷换语义。集合显式 known/unknown，已知空集合不支持任何值。金额范围、Merchant allowlist、Compliance Tags 和在线 Provider account 发现仍未接入这个 Catalog；教学模型中的字段不构成已实现声明。
 

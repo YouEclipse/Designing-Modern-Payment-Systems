@@ -60,7 +60,7 @@ Problem
 - 历史成功率带有流量构成与路由选择偏差，不能直接解释为 Provider 的因果优势。
 - Tokenization 不自动移出 PCI scope；PAN、CVV/SAD 不得进入平台存储、日志或事件。
 - Merchant key、operation ID、Provider idempotency key 与 Provider transaction reference 必须分开建模。
-- 冲突或迟到的资金证据不得 last-write-wins；保留事实并进入 `review_required`。
+- 所有迟到资金证据都必须追加保存，不得 last-write-wins；重复或更弱且不冲突的观察按领域归约 no-op，只有不相容、身份冲突或无法安全归属的证据才进入 `review_required`。
 
 涉及 Provider 行为、API、标准或合规时，优先引用当前官方资料并在线核验。
 
@@ -132,7 +132,7 @@ CI 失败后读取精确日志，修复根因并补回归测试，重新推送�
 
 - GitBook 本地 Markdown 链接全部存在；
 - Go 示例登记到 `scripts/go-examples/manifest.json`，用 `go run scripts/verify-go-examples.go <chapter.md>...` 从当前正文提取并执行 compile/race/vet；新增未登记代码块必须失败，临时目录里曾经编译过不等于可重复门禁；
-- Mermaid 用 `scripts/verify-mermaid.sh <chapter.md>...` 抽取并实际渲染；不能以人工阅读或代码块计数代替；
+- Mermaid 用 `scripts/verify-mermaid.sh <chapter.md>...` 抽取并实际渲染；不能以人工阅读或代码块计数代替。脚本在单图计时前按 `MERMAID_SETUP_TIMEOUT_SECONDS` 预热并核验固定版本 CLI，把 npm/Puppeteer 缓存与 setup/render 的 `TMPDIR` 固定到书仓 `.validation-tmp/`，并用 `MERMAID_NPM_FETCH_TIMEOUT_MS` / `MERMAID_NPM_FETCH_RETRIES` 限制冷启动网络等待；默认 npx 路径总是固定 `@mermaid-js/mermaid-cli@11.16.0`，PATH 中偶然存在的 `mmdc` 或单独设置 `MERMAID_CLI_VERSION` 都不会绕过该 pin；已有受控安装只能通过 `MMDC_BIN` 显式指定，其 `--version` 必须等于 `MERMAID_CLI_VERSION`（未设置时为 pin 版本 `11.16.0`）；
 - 插图尺寸、路径和 Markdown 嵌入正确；
 - 术语表、SUMMARY、README 与章节链接同步；
 - 不把骨架章节、Simulator 或 PSP sandbox 夸大成完成的 live 系统。
@@ -147,7 +147,7 @@ CI 失败后读取精确日志，修复根因并补回归测试，重新推送�
 6. 用 `git ls-remote` 核对两个远端 SHA。
 7. 最终交付说明包含双仓 commit、CI 链接、完成范围、未完成章节和 live-payment 边界。
 
-每个 `deliveries/<chapter-slug>.md` 至少记录：章节核心命题、固定的实现 commit、CI run、章节主张到工程文件/测试的映射、配图清单、验证结果和明确未实现项。以 Git 历史中包含该 manifest 的 commit 作为书稿 revision，避免在文件中自引用一个会因提交而变化的 SHA。
+每个 `deliveries/<chapter-slug>.md` 至少记录：章节核心命题、固定的实现 commit、CI run、章节主张到工程文件/测试的映射、配图清单、验证结果和明确未实现项；每条主张还必须显式标为 `implemented`、`teaching_model` 或 `target_contract`，不能让读者从散落 prose 猜测 runtime 状态。以 Git 历史中包含该 manifest 的 commit 作为书稿 revision，避免在文件中自引用一个会因提交而变化的 SHA。
 
 ## 10. Definition of Done
 

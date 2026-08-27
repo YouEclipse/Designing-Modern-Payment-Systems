@@ -371,11 +371,11 @@ stateDiagram-v2
 
 ### 1.4.5 从概念模型到可运行切片
 
-本章对应[固定实现 `adbdf755`](https://github.com/YouEclipse/payments/tree/adbdf75589dcb7b9ae088aa9f92fde2c2f063aeb)：[领域模型](https://github.com/YouEclipse/payments/blob/adbdf75589dcb7b9ae088aa9f92fde2c2f063aeb/services/payment/internal/domain/model.go)把 Intent、Attempt、Operation、certainty 与 integrity 分开，[事务存储](https://github.com/YouEclipse/payments/blob/adbdf75589dcb7b9ae088aa9f92fde2c2f063aeb/services/payment/internal/postgres/store.go)负责幂等、inbox/outbox 和资金证据冲突。代码中的 `review_required` 属于独立 integrity 维度，而不是把已成功收款改成失败。
+本章对应[固定实现 `bc4afde`](https://github.com/YouEclipse/payments/tree/bc4afde24da708d22f67da72a90a1557b1477173)：[领域模型](https://github.com/YouEclipse/payments/blob/bc4afde24da708d22f67da72a90a1557b1477173/services/payment/internal/domain/model.go)把 Intent、Attempt、Operation、certainty 与 integrity 分开，[事务存储](https://github.com/YouEclipse/payments/blob/bc4afde24da708d22f67da72a90a1557b1477173/services/payment/internal/postgres/store.go)负责幂等、inbox/outbox 和资金证据冲突。代码中的 `review_required` 属于独立 integrity 维度，而不是把已成功收款改成失败。
 
 当前切片只执行 tokenized card 的 automatic-capture `SALE`，使用受环境门禁保护的 Simulator，不处理真钱。manual capture、Void、Refund、3DS、Settlement 与 Chargeback 在本章是设计语义，不是已经开放的 API；上面的状态图也不是代码 enum 的逐字抄本。准确枚举和已实现转换见[附录 A](../appendices/payment-state-models.md)。
 
-[此提交的绿色 CI](https://github.com/YouEclipse/payments/actions/runs/32919381068)覆盖真实 PostgreSQL 与 Compose：成功、明确拒绝、响应丢失后 `UNKNOWN` 收敛，以及整个未知窗口只有一个 Attempt / Operation。读者可按[交付记录](../deliveries/chapter-01-payment-lifecycle.md)定位对应测试；最终成功不足以证明安全，单资金路径和冲突隔离才是同时需要验证的事实。
+[此提交的绿色 CI](https://github.com/YouEclipse/payments/actions/runs/33041147119)覆盖真实 PostgreSQL 与 Compose：成功、明确拒绝、响应丢失后 `UNKNOWN` 收敛，以及整个未知窗口只有一个 Attempt / Operation。读者可按[交付记录](../deliveries/chapter-01-payment-lifecycle.md)定位对应测试；最终成功不足以证明安全，单资金路径和冲突隔离才是同时需要验证的事实。
 
 ## 1.5 Failure Modes：生命周期在坏天气里是否仍然成立
 

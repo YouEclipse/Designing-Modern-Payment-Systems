@@ -5,12 +5,18 @@
 - 核心命题：Router 决定精确路径，Payment 拥有状态与资金操作，Gateway 只执行被固定的连接；三个角色不能暗中互相代替。
 - 演进线：Provider 字符串 → 同 PSP 多账户/Region → 决策与结果分离 → 不可变执行身份和恢复边界。
 - 本章增量：connection ID、revision、namespace 贯穿 Router → Payment → Gateway → PostgreSQL；注册表拒绝旧修订重绑定；别名只提供显式旧操作恢复。
-- 后续范围：Context、RuleSet、Capability 的完整版本化交给第 4～6 章；Scoring、Fallback 和 Decision Store 不在此提交内。
+- 后续范围：Context、RuleSet、Capability、Scoring、Fallback 和 Decision Store 不属于本章的完成声明；它们的当前状态分别以第 4～14 章 manifest 为准。
+
+## Status
+
+- `implemented`：固定实现中的精确 connection/revision/namespace 固定、不可变 registry、显式 recovery alias 与 UNKNOWN 单路径。
+- `teaching_model`：正文 3 个 Go 块中的反例、Router/Payment/Gateway 合同与执行身份固定模型。
+- `target_contract`：真实 Adapter 的账户/Region/API/credential scope、跨 Provider Fallback executor 与独立 Decision Store；Context 和 Scoring 的当前状态以对应后章 manifest 为准。
 
 ## 配套实现
 
-- 固定实现：[adbdf75589dcb7b9ae088aa9f92fde2c2f063aeb](https://github.com/YouEclipse/payments/commit/adbdf75589dcb7b9ae088aa9f92fde2c2f063aeb)。
-- CI：[32919381068 — success](https://github.com/YouEclipse/payments/actions/runs/32919381068)。
+- 固定实现：[bc4afde24da708d22f67da72a90a1557b1477173](https://github.com/YouEclipse/payments/commit/bc4afde24da708d22f67da72a90a1557b1477173)。
+- CI：[33041147119 — success](https://github.com/YouEclipse/payments/actions/runs/33041147119)。
 - API：Router v1 Decision 输出完整 Selected Candidate；Gateway execute/query/outcome 校验同一个身份元组。
 - 迁移：Payment `003` 与 Gateway `0002` 是协调契约升级，不能与仍写旧身份的进程混跑；legacy recovery 与 payload hash 升级有集成测试。
 
@@ -18,16 +24,16 @@
 
 工程文件相对于固定实现。
 
-| 主张 | 工程文件 | 验证 |
-| --- | --- | --- |
-| 决策携带可执行连接，执行层不二次选路 | Router routing types/engine；Payment app/client；Gateway service | Router unit；`TestSameProviderConnectionsStayPinnedThroughUnknownRecovery` |
-| 已绑定的 revision 不能换 endpoint/namespace | Gateway `connection_registry.go` 与 PostgreSQL registry | `TestPostgresConnectionRegistryRejectsMutationOfBoundRevision`；batch rollback / concurrent winner tests |
-| 新修订不能恢复旧 UNKNOWN | Gateway readiness / registry / service | `TestPostgresConnectionRegistryNewRevisionCannotRecoverOldUnknown`；`TestReadinessRejectsRevisionAndNamespaceDrift` |
-| 相同 namespace 是冲突域，不是 webhook 通行证 | Gateway recovery aliases、webhook verification | `TestRecoveryAliasCanonicalizesWebhookTupleAndSharesNamespaceCollisionDomain`；跨连接 webhook 拒绝测试 |
-| Attempt 与 Operation 必须固定一致身份 | Payment domain、数据库 composite foreign key | `TestPrepareConfirmationRequiresMatchingExecutionIdentity`；`TestDatabaseRejectsOperationExecutionIdentityDrift` |
-| 同 Provider reference 跨别名碰撞需要隔离 | Payment inbox/reference uniqueness | `TestProviderReferenceCollisionSpansAliasesInTheSameNamespace`；不同 namespace 可重复的对照测试 |
-| legacy 升级不能把历史操作变成新路径 | Payment/Gateway migrations 与 hash upgrade | `TestProviderConnectionMigrationUpgradesLegacyOutcomePayloads`；`TestMemoryStoreUpgradesExactLegacyRequestHash` |
-| UNKNOWN 不增加资金路径且不改变连接 | `test/e2e/payment_flow_test.go` | Compose：一个 Attempt、一个 Payment Operation、一个 Gateway Operation；两端 ID/revision/namespace 相等 |
+| Status | 主张 | 工程文件 | 验证 |
+| --- | --- | --- | --- |
+| `implemented` | 决策携带可执行连接，执行层不二次选路 | Router routing types/engine；Payment app/client；Gateway service | Router unit；`TestSameProviderConnectionsStayPinnedThroughUnknownRecovery` |
+| `implemented` | 已绑定的 revision 不能换 endpoint/namespace | Gateway `connection_registry.go` 与 PostgreSQL registry | `TestPostgresConnectionRegistryRejectsMutationOfBoundRevision`；batch rollback / concurrent winner tests |
+| `implemented` | 新修订不能恢复旧 UNKNOWN | Gateway readiness / registry / service | `TestPostgresConnectionRegistryNewRevisionCannotRecoverOldUnknown`；`TestReadinessRejectsRevisionAndNamespaceDrift` |
+| `implemented` | 相同 namespace 是冲突域，不是 webhook 通行证 | Gateway recovery aliases、webhook verification | `TestRecoveryAliasCanonicalizesWebhookTupleAndSharesNamespaceCollisionDomain`；跨连接 webhook 拒绝测试 |
+| `implemented` | Attempt 与 Operation 必须固定一致身份 | Payment domain、数据库 composite foreign key | `TestPrepareConfirmationRequiresMatchingExecutionIdentity`；`TestDatabaseRejectsOperationExecutionIdentityDrift` |
+| `implemented` | 同 Provider reference 跨别名碰撞需要隔离 | Payment inbox/reference uniqueness | `TestProviderReferenceCollisionSpansAliasesInTheSameNamespace`；不同 namespace 可重复的对照测试 |
+| `implemented` | legacy 升级不能把历史操作变成新路径 | Payment/Gateway migrations 与 hash upgrade | `TestProviderConnectionMigrationUpgradesLegacyOutcomePayloads`；`TestMemoryStoreUpgradesExactLegacyRequestHash` |
+| `implemented` | UNKNOWN 不增加资金路径且不改变连接 | `test/e2e/payment_flow_test.go` | Compose：一个 Attempt、一个 Payment Operation、一个 Gateway Operation；两端 ID/revision/namespace 相等 |
 
 ## 书稿验证
 
@@ -40,4 +46,4 @@
 
 ## 能力边界
 
-默认两个 Candidate 都由开发 Simulator 执行，共享明确的模拟 Provider namespace，不代表两个真实 PSP 账户。注册表当前 fingerprint 保护模拟 Adapter 的 endpoint/provider/namespace/验签配置；真实 Adapter 还必须纳入真实账户、Region、API 版本与 credential scope，不能以本地 fingerprint 代替供应商契约。没有真钱接入、manual capture、Void、Refund、完整 Context 或跨 Provider fallback。
+默认两个 Candidate 都由开发 Simulator 执行，共享明确的模拟 Provider namespace，不代表两个真实 PSP 账户。注册表当前 fingerprint 保护模拟 Adapter 的 endpoint/provider/namespace/验签配置；真实 Adapter 还必须纳入真实账户、Region、API 版本与 credential scope，不能以本地 fingerprint 代替供应商契约。同一固定提交已经包含后章的版本化 Context 与 v3 Scoring，但它们不扩大本章的完成声明；系统仍没有真钱接入、manual capture、Void、Refund 或跨 Provider fallback executor。

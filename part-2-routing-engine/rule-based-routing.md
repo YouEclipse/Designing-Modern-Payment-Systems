@@ -426,7 +426,7 @@ Rule Set 只决定新 Attempt 的候选。若恢复 worker 每次 query 前重�
 
 ## 5.8 配套 Go 系统的当前边界与本章增量
 
-本章的[固定实现](https://github.com/YouEclipse/payments/tree/6583e4dc37b391a8ecbe51830780717f1c0f8843/services/router/internal/rules)位于 `internal/rules`，由 `internal/decision` 接入 v2 pipeline。原 `internal/routing` 的静态 v1 仍保留，不通过升级静默改变旧 endpoint。线上服务只接收 Context，不接收调用方临时提交的 Rule、Candidate 列表或版本选择。
+本章的[固定实现](https://github.com/YouEclipse/payments/tree/bc4afde24da708d22f67da72a90a1557b1477173/services/router/internal/rules)位于 `internal/rules`，由 `internal/decision` 接入 v2 pipeline。原 `internal/routing` 的静态 v1 仍保留，不通过升级静默改变旧 endpoint。线上服务只接收 Context，不接收调用方临时提交的 Rule、Candidate 列表或版本选择。
 
 `Compile` 对 `routing_rules.v1` 执行严格结构和语义校验：仅四种 Condition、四种 Action；完整 default manifest；唯一 Rule ID；有效时间区间；引用存在；复杂度有界；可重叠的同优先级 force/排序冲突在启用前拒绝。它复制输入、规范化无序集合并计算完整摘要，求值时不读取网络或当前时钟。相同 Context、eligible set 和 Artifact 会产生相同 plan 与 evidence。
 

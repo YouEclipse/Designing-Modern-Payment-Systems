@@ -3,9 +3,21 @@
 > 性质：写作与配套 Go 系统的执行地图，不是章节正文，也不代表下列能力已经实现。
 > 覆盖范围：第 4～22 章与附录 A～C；第 1～3 章是前置基线。目录编号保持不变。
 
+## 0. 合同状态
+
+本文件描述“应该交付什么”，默认状态是 `target_contract`，不是完成声明。每项能力只能按以下三种状态解释：
+
+| status | 可声称的范围 | 所需证据 |
+| --- | --- | --- |
+| `implemented` | 当前 `payments` 代码中存在并由实际测试覆盖的窄能力 | 对应 delivery manifest 的 claim→code→test 映射、固定实现 commit 与该 SHA 的绿色 CI run |
+| `teaching_model` | 正文中可编译、可反例验证的 Go 模型 | 本书 verifier/专属 tests；不能推导服务、数据库、worker 或 live Provider runtime 已实现 |
+| `target_contract` | 未来实现必须满足的 authority、状态与失败语义 | 设计说明和失败测试计划；没有 runtime 完成含义 |
+
+章节或附录的当前 status 以各自 delivery manifest 为准；同一章可以同时包含已实现基线、教学模型和目标合同。下文“窄而完整的 Go 纵向增量”是目标描述，只有 manifest 明确标为 `implemented` 且固定代码证据齐全后，才能改称当前实现。
+
 ## 1. 使用方式与全书范围护栏
 
-每章只交付一条“能从 API 进入、穿过领域模型与持久化、在失败条件下仍可验证”的窄纵向切片。章节正文遵循 `Problem → Simple Design → Problems at Scale → Production Design → Failure Modes → Trade-offs → Summary`；代码先于书稿发布，代码 CI 全绿后才把固定 SHA 写入对应 delivery manifest。
+每章围绕一条“能从 API 进入、穿过领域模型与持久化、在失败条件下仍可验证”的窄纵向切片组织目标合同。章节正文遵循 `Problem → Simple Design → Problems at Scale → Production Design → Failure Modes → Trade-offs → Summary`；需要配套 runtime 的能力必须代码先于书稿发布，代码 CI 全绿后才把固定 SHA 写入对应 delivery manifest。
 
 以下两项不是独立章节：
 
@@ -19,7 +31,7 @@
 3. timeout、断连、响应丢失和含糊 5xx 先进入 `UNKNOWN`；同一逻辑资金操作只能复用原 connection、payload、Provider key 与 operation ID。
 4. Eligibility 硬约束先于 Rule 偏好和 Scoring；分数、实验或模型都不能复活不合格 Candidate。
 5. Router 生成可解释 Decision；Payment/Orchestrator 拥有 Intent、Attempt、Operation、幂等和资金状态迁移；Gateway/Adapter 执行已固定的 connection。
-6. 冲突或迟到的资金证据保留为事实并进入 `review_required`，不能 last-write-wins。
+6. 所有迟到资金证据都追加保存，不能 last-write-wins；重复或更弱且不冲突的观察按领域归约 no-op，只有不相容、身份冲突或无法安全归属的证据才进入 `review_required`。
 7. Tokenization 不自动移出 PCI DSS scope；PAN、CVV/SAD、Provider secret 不进入 Routing Context、Decision、日志、Trace、Metric 或事件。
 
 ## 2. 当前代码基线与第 3 章前置合同
@@ -28,12 +40,12 @@
 
 | 当前事实 | 工程锚点 | 后续约束 |
 | --- | --- | --- |
-| Payment 是支付聚合与商户幂等的唯一写入者 | `services/payment/internal/domain/model.go`、`services/payment/internal/app/service.go`、`services/payment/internal/postgres/store.go` | Intent/Attempt/Operation 的迁移仍在 Payment 事务内完成 |
-| Router 目前按 `provider string` 做静态排序和基本硬过滤 | `services/router/internal/routing/{types,engine}.go`、`contracts/internal/router-api.openapi.yaml` | 第 3 章先升级为精确 Route Candidate/Provider Connection；后章不得退回只按 PSP 名称决策 |
-| Gateway 持久化 Provider Operation、webhook inbox/outbox，并将不确定网络结果归一化为 UNKNOWN | `services/provider-gateway/internal/gateway/`、`contracts/internal/provider-gateway-api.openapi.yaml` | Adapter 不能暗中改路，query/retry 必须使用原 operation 与 connection |
+| Payment 是支付聚合与商户幂等的唯一写入者，并原子固定 v3 Context/Decision/Risk/Optimization 与不可续期执行期限 | `services/payment/internal/app/service.go`、`services/payment/internal/postgres/{routing_evidence,recovery}.go`、迁移 `005`/`006` | Intent/Attempt/Operation 的迁移仍在 Payment 事务内完成；首次执行权限和已 dispatch recovery 不得混为一谈 |
+| Router v3 已按精确 connection/revision 运行 Capability → Rule → Risk → Cost/observational Performance → integer Scoring 的约束流水线 | `services/router/internal/{capability,decision,cost,performance,scoring}`、`contracts/internal/router-api.openapi.yaml` | fixture-backed 本地 evidence 不得冒充真实 PSP 报价、因果成功率、动态 Health 或 Fraud Engine |
+| Gateway 以不可变 connection revision 执行 Provider Operation，使用 dispatch CAS、结构化 absence proof 与追加式 observation ledger 收敛不确定结果 | `services/provider-gateway/internal/gateway/`、迁移 `0003`～`0005`、`contracts/internal/provider-gateway-api.openapi.yaml` | Adapter 不能暗中改路；query/resubmit 必须使用原 operation、connection、key 与 payload，普通 404 不授权资金重提 |
 | 当前资金切片仅支持 tokenized card、automatic capture、单个 `SALE` | `contracts/public/payment-api.openapi.yaml`、`README.md` | manual capture、void、refund 只有在相应章节明确实现后才能宣称支持 |
-| PostgreSQL 已有 merchant idempotency、outbox/inbox、reference uniqueness、quarantine 与 recovery lease | `services/payment/internal/postgres/migrations/` | Redis、broker 或新服务只有在章节压力真实要求时引入；不能替代数据库事实 |
-| E2E 已证明 approved、declined、lost response→UNKNOWN→收敛，以及 UNKNOWN 只有一条资金路径 | `test/e2e/payment_flow_test.go` | 后续测试必须保留这些回归，并增加本章唯一失败证明 |
+| PostgreSQL 已有 merchant idempotency、outbox/inbox、reference uniqueness、quarantine、不可重置 recovery budget/deadline/lease、路由快照与时钟见证 | `services/payment/internal/postgres/`、`docs/runbooks/` | Redis、broker 或新服务只有在章节压力真实要求时引入；不能替代数据库事实，生产升级必须执行 006 预检 |
+| CI E2E 证明 approved、declined、Risk/no-candidate 零资金路径、lost response→UNKNOWN→同 operation 收敛，以及并发幂等只有一条资金路径 | `test/e2e/payment_flow_test.go`、`.github/workflows/ci.yml` | 后续测试必须保留这些回归；当前 Simulator 证据不等于真实 PSP certification |
 
 第 3 章结束时必须提供后续章节可依赖的最小前置：
 
@@ -113,7 +125,7 @@
 | 规模/失败压力 | 流量构成和历史路由造成选择偏差；高维分桶稀疏、冷启动、延迟事件、低流量 100% 样本和时间漂移让排行抖动。 |
 | 自然推导组件或不变量 | 不可变 `PerformanceSnapshot`、分层 Segment Key、样本量/窗口/`observed_at`、Bayesian smoothing 或显式 shrinkage、从细到粗的回退链。估计值必须携带证据，不能伪装成因果效果。 |
 | 明确留给后章 | Cost/Success 综合评分留第 9 章；Health 的分钟级运行信号留第 13 章；指标生产与 SLO 留第 15 章；因果实验留第 16 章；最终结果校正留第 17、18 章；ML 反事实问题留第 21 章。 |
-| 窄而完整的 Go 纵向增量 | 新增 `services/router/internal/performance`，读取一个版本化只读 snapshot artifact，按 `candidate + country + card_brand + currency` 查找并逐级回退；输出 `estimate/sample_size/window/confidence/source_segment/version`。先不引入流处理平台。 |
+| 窄而完整的 Go 纵向增量 | 新增 `services/router/internal/performance`，读取一个版本化只读 snapshot artifact，按 `candidate_id + connection_revision + country_field + payment_method_context.network + currency` 以及明确的 cohort/denominator contract 查找并逐级回退；输出 `estimate/sample_size/window/confidence/source_segment/version`。先不引入流处理平台。 |
 | 证明性失败测试 | 1/1 的 100% 小样本不能无条件击败 900/1000 的稳定样本；细分桶缺失时必须按固定层级回退；过期 snapshot 触发显式降级，候选配置顺序变化不改变结果。 |
 | 官方一手资料类别 | Provider/Acquirer 官方交易结果数据字典；Card Network response/advice code 规范；所采用 smoothing、衰减或置信方法的原始论文/规范。 |
 | 依赖前章 | 第 4 章稳定分段字段；第 6 章 Candidate identity；第 7 章保持 Expected Cost 与 success estimate 分离。 |
@@ -156,7 +168,7 @@
 | 核心命题 | 幂等是对“同一业务操作”的持久化身份、参数不变性和并发所有权定义；不同层的 key 与作用域不能混为一谈。 |
 | 简单系统 | Redis 缓存 `Idempotency-Key → response`，进程重启或缓存过期后重新执行。 |
 | 规模/失败压力 | 相同 key 不同 payload、并发 confirm、事务提交后响应丢失、Provider key 只在某 Merchant Account/Region 有效、重复/乱序 webhook。 |
-| 自然推导组件或不变量 | 四个独立身份：merchant key、内部 operation ID、Provider idempotency key、Provider transaction reference；`(merchant, key)` command fingerprint；`(provider connection, provider key)` 唯一约束；inbox event identity。缓存永不成为事实源。 |
+| 自然推导组件或不变量 | 四个独立身份：merchant key、内部 operation ID、Provider idempotency key、Provider transaction reference；`(merchant, key)` command fingerprint；`(Adapter 声明的外部幂等 namespace, provider key)` 唯一约束；按 Provider event namespace 的 inbox identity。执行仍固定精确 connection/revision，缓存永不成为事实源。 |
 | 明确留给后章 | 新 Attempt 的 Fallback 规则留第 12 章；完整状态参考留附录 A；跨 Region key 所有权留第 19 章；Provider 各异的保留期由 Adapter metadata 暴露但不假设全球统一。 |
 | 窄而完整的 Go 纵向增量 | 加固 `services/payment/internal/idempotency` 与 SQL：显式 command scope、canonical fingerprint、in-progress resource correlation/replay；Provider key 由 operation identity 生成并和第 3 章 connection identity 一起持久化。补并发安全的 confirm winner、Gateway request hash 与 webhook inbox payload-hash 冲突语义；恢复继续领取原 operation，不因记录“过期”而新建资金路径。 |
 | 证明性失败测试 | 20 个并发相同 confirm key 只产生一个 Attempt/Operation 并返回同一结果；相同 key 不同 command/payload 返回 409；Gateway 同 operation ID 但换 amount、token、connection 或 capture mode 必须在调用 Provider 前拒绝。 |
@@ -331,7 +343,7 @@
 
 ## 4. 附录可执行合同
 
-### 附录 A Payment Intent、Attempt 与 Provider Request 状态模型
+### 附录 A Payment Intent、Attempt 与 Provider Request 状态模型（[交付记录](appendix-a-payment-state-models.md)）
 
 | 合同项 | 内容 |
 | --- | --- |
@@ -346,7 +358,7 @@
 | 依赖前章 | 第 1 章领域入口；第 10～12 章 UNKNOWN/幂等/Fallback；第 17 章冲突证据。附录负责统一参考，不重复章节推导。 |
 | 图形锚点 | 三张 Mermaid state diagram（Intent/Attempt/Operation）与一张基数图；表格：事件→允许前态→后态→资金证据→失败动作；Ian 插图不建议使用，精确状态图信息增益更高。 |
 
-### 附录 B 安全、合规与数据边界
+### 附录 B 安全、合规与数据边界（[交付记录](appendix-b-security-compliance.md)）
 
 | 合同项 | 内容 |
 | --- | --- |
@@ -361,7 +373,7 @@
 | 依赖前章 | 第 3、4、6 章 boundary/Context/connection；第 14 章 Decision data minimization；第 19、20 章 residency/RBAC。 |
 | 图形锚点 | Mermaid trust-boundary/data-flow diagram；表格：数据类别/允许服务/允许落盘/日志策略/保留期；Ian 插图可用“透明管道外有多道闸门，敏感包裹不进入 Router 房间”。 |
 
-### 附录 C 容量规划与上线检查清单
+### 附录 C 容量规划与上线检查清单（[交付记录](appendix-c-capacity-planning-and-launch-checklist.md)）
 
 | 合同项 | 内容 |
 | --- | --- |
@@ -384,7 +396,7 @@
 | Payment Attempt | Payment/Orchestrator | Router 为它生成 Decision；Gateway 只看 attempt ID 作为关联 | 第 3、11、12 章 | Fallback 才可能创建新 Attempt；UNKNOWN 阻断新资金路径 |
 | Provider Operation | Payment/Orchestrator 拥有逻辑 operation；Gateway 拥有外部执行副本 | Adapter execute/query；webhook/reconciliation 提交 Observation | 第 3、10、11 章；附录 A | operation ID、connection、payload、Provider key 固定；Capture/Void/Refund 绑定原 reference |
 | Merchant idempotency key | Merchant 生成，Payment 定义 `(merchant,key)` 语义并持久化 | API gateway 传递，不得改写 | 第 11、19 章 | 同 key 不同 command/payload 冲突；跨 Region 仍只有一个 winner |
-| Provider idempotency key | Payment 从 operation 派生；Gateway/Adapter 按 Provider contract 使用 | Provider 在声明的账户/Region/期限内去重 | 第 10、11 章 | 不是跨 PSP 全局去重；作用域至少包含精确 connection |
+| Provider idempotency key | Payment 从 operation 派生；Gateway/Adapter 按 Provider contract 使用 | Provider 在 Adapter 声明的外部幂等 namespace/期限内去重 | 第 10、11 章 | 不是跨 PSP 全局去重；唯一作用域跟随 Provider 实际外部 namespace，执行仍固定精确 connection/revision |
 | Provider transaction/reference | Provider 产生；Gateway 原样保存并归一化关联 | Payment 只在验证 identity 后绑定；Settlement/Reconciliation 匹配 | 第 3、10、17、18 章 | 不可伪造或复用到另一 Attempt；冲突进入 review |
 | Provider / Merchant Account / Connector / Region | Connector/配置所有者维护；Gateway 掌握 endpoint/credential | Router 用其只读视图组成 Candidate；Payment 固定所选快照 | 第 3、6 章 | `Provider` 品牌名不能替代可执行 connection identity |
 | Provider Adapter | Provider Gateway | Router 只读 capability descriptor；Payment 调统一 Gateway contract | 第 3、6 章 | 只执行已选 connection 并归一化语义，不能暗中路由 |
@@ -395,7 +407,8 @@
 | Expected Cost / Actual Cost | Router Cost Model 拥有估算；Settlement 服务拥有实际事实 | Config Platform 发布校准 fee artifact | 第 7、18、20 章 | 两者分列且带币种/版本；Router 不改 Settlement line |
 | Performance Estimate | Performance snapshot producer 发布；Router 只读估计 | Observability/Reconciliation 提供校正数据 | 第 8、15～18 章 | 带窗口、样本、置信与选择偏差声明；不当作因果优势 |
 | Risk Decision | Fraud/Risk Engine | Payment 传递版本化最小 contract；Router 执行 guardrail/有限偏好 | 第 9 章 | Router 不重算 Fraud；block 不可被分数、实验或 fallback 绕过 |
-| Routing Decision / Route Plan | Router 构造语义与 digest；Payment 固定执行快照 | Decision Store 保存查询投影；Gateway 只收选定 connection | 第 3、9、12、14 章 | Decision 不产生资金副作用；Attempt 始终引用所执行版本 |
+| Routing Decision / `RoutePlanDecision` | Router 构造语义、固定 candidate order/版本/预算/有效期与 digest；Payment 固定执行快照 | Decision Store 保存查询投影；Gateway 只收选定 connection | 第 3、9、12、14 章 | Decision 不产生资金副作用；guardrail-only revalidation 只能 veto，不能新增/重排/重评分/续期；过期必须 Stop |
+| `FallbackExecutionBinding` | Payment/Orchestrator 在 successor transaction 中写入 | Router-owned guardrail 检查固定 next；Decision Store 可投影 lineage | 第 12、14、22 章 | 只能引用既有 `RoutePlanDecision`、前序 Attempt、固定 next 与新鲜证据；不是 Router Decision，也不能授权 Plan 外执行 |
 | Provider Health | Health subsystem/Router-owned store 聚合状态；Gateway 提供技术 observation | Eligibility/Scoring 消费 snapshot；Observability 展示 | 第 13、15、19 章 | 按故障维度和时效；Decline 不等于技术不健康；不是 Capability |
 | Decision Record | Router 构造，Payment outbox 保证已执行快照最终投影；Decision Store append-only | Metrics/Experiment/Replay/Cost attribution 读取 | 第 14～18、21 章 | 相同 ID 不同 hash 隔离；不复制不必要敏感数据；不是 Ledger |
 | Experiment Assignment | Router Experiment evaluator；Config Platform 管 artifact | Payment 只执行 champion 并固定 assignment | 第 16、20、21 章 | 同一 Intent 稳定；shadow 不创建 Provider Operation |

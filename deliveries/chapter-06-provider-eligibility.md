@@ -7,25 +7,31 @@
 - 本章增量：`capability_catalog.v1` compiler/filter、完整 Candidate manifest、Descriptor provenance/freshness、逐候选 Eligibility evidence。
 - 后续范围：金额区间、Merchant 合同、Compliance、Health、费用与成功率分别留给后续 Catalog 版本及第 7、8、13 章。
 
+## Status
+
+- `implemented`：固定实现中的 `capability_catalog.v1` 编译/过滤、精确 connection revision、三值事实、freshness 与逐候选证据。
+- `teaching_model`：正文 5 个 Go 块中的 legacy filter 与 Capability Catalog 最小模型。
+- `target_contract`：金额、Merchant/Compliance、在线 Provider discovery、动态 Health、真实账户合同与 Token portability。
+
 ## 配套实现
 
-- 固定实现：[6583e4dc37b391a8ecbe51830780717f1c0f8843](https://github.com/YouEclipse/payments/commit/6583e4dc37b391a8ecbe51830780717f1c0f8843)。
-- CI：[32987908560 — success](https://github.com/YouEclipse/payments/actions/runs/32987908560)。
+- 固定实现：[bc4afde24da708d22f67da72a90a1557b1477173](https://github.com/YouEclipse/payments/commit/bc4afde24da708d22f67da72a90a1557b1477173)。
+- CI：[33041147119 — success](https://github.com/YouEclipse/payments/actions/runs/33041147119)。
 - 纵向切片：Router v2 按精确 connection revision 过滤 Currency、country、Payment Method、Operation/Capture、credential domain 与时间；Rule 只接收 eligible IDs。
 
 ## 主张—实现—测试
 
 工程文件相对于固定实现。
 
-| 主张 | 工程文件 | 验证 |
-| --- | --- | --- |
-| 能力属于精确 connection revision，不属于 PSP 品牌 | capability Artifact/Catalog | `TestCatalogEligibilityUsesExactConnectionAndThreeValues` |
-| 半快照、别名与含糊 Artifact 不能启用 | capability compiler | `TestCatalogRejectsPartialAndAmbiguousArtifacts` |
-| unknown/stale fail closed，已知 no 保留解释 | capability filter + decision evidence | Catalog unit tests；`TestV2UnknownCredentialIsExplicitNoCandidate` |
-| Currency/credential 硬约束先于 Rule | decision pipeline | `TestPipelineForceAndSplitNeverOverrideCredentialOrCurrencyEligibility` |
-| Snapshot 可重放但过期后不可用于新执行 | catalog/rules validity + HTTP admission | replay/online execution contrast tests |
-| 无候选返回证据且不触发 Gateway | Router v2 HTTP；Payment client | `422` evidence tests；Compose no-eligible path |
-| 选中连接与执行连接保持同一身份 | Decision、Payment Attempt/Operation、Gateway | PostgreSQL integration 与 Compose tuple assertions |
+| Status | 主张 | 工程文件 | 验证 |
+| --- | --- | --- | --- |
+| `implemented` | 能力属于精确 connection revision，不属于 PSP 品牌 | capability Artifact/Catalog | `TestCatalogEligibilityUsesExactConnectionAndThreeValues` |
+| `implemented` | 半快照、别名与含糊 Artifact 不能启用 | capability compiler | `TestCatalogRejectsPartialAndAmbiguousArtifacts` |
+| `implemented` | unknown/stale fail closed，已知 no 保留解释 | capability filter + decision evidence | Catalog unit tests；`TestV2UnknownCredentialIsExplicitNoCandidate` |
+| `implemented` | Currency/credential 硬约束先于 Rule | decision pipeline | `TestPipelineForceAndSplitNeverOverrideCredentialOrCurrencyEligibility` |
+| `implemented` | Snapshot 可重放但过期后不可用于新执行 | catalog/rules validity + HTTP admission | replay/online execution contrast tests |
+| `implemented` | 无候选返回证据且不触发 Gateway | Router v2 HTTP；Payment client | `422` evidence tests；Compose no-eligible path |
+| `implemented` | 选中连接与执行连接保持同一身份 | Decision、Payment Attempt/Operation、Gateway | PostgreSQL integration 与 Compose tuple assertions |
 
 ## 图表与配图
 
@@ -35,7 +41,7 @@
 
 ## 发布验证
 
-固定实现的 unit、race、vet、OpenAPI、真实 PostgreSQL integration、服务镜像构建和 Compose E2E 均在 CI run `32987908560` 成功；书稿本地链接、Mermaid、图片和固定实现链接通过检查。代码远端 SHA 已核对；书稿 revision 由包含本记录的 Git 历史确定。
+固定实现的 unit、race、vet、OpenAPI、真实 PostgreSQL integration、服务镜像构建和 Compose E2E 均在 CI run `33041147119` 成功；书稿本地链接、Mermaid、图片和固定实现链接通过检查。代码远端 SHA 已核对；书稿 revision 由包含本记录的 Git 历史确定。
 
 ## 能力边界
 

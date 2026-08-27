@@ -7,24 +7,30 @@
 - 新增概念：Authorization、Capture、Clearing、Settlement 的阶段差异；业务投影与资金事实分离；UNKNOWN 和 integrity review。
 - 后续范围：第 3 章精确执行身份、第 10～12 章恢复与幂等、第 17～18 章事实和经济闭环。本章不开放 manual capture、Void 或 Refund API。
 
+## Status
+
+- `implemented`：固定实现中的 automatic-capture `SALE` 状态、持久幂等/inbox/outbox、UNKNOWN 原操作收敛和冲突 integrity review。
+- `teaching_model`：正文 3 个 Go 块中的同步反例、最小 SALE 合同与追加式投影模型。
+- `target_contract`：manual Capture/Void/Refund、完整异步认证、Ledger、Settlement 与争议流程。
+
 ## 配套实现
 
-- 固定实现：[adbdf75589dcb7b9ae088aa9f92fde2c2f063aeb](https://github.com/YouEclipse/payments/commit/adbdf75589dcb7b9ae088aa9f92fde2c2f063aeb)。
-- CI：[32919381068 — success](https://github.com/YouEclipse/payments/actions/runs/32919381068)。
+- 固定实现：[bc4afde24da708d22f67da72a90a1557b1477173](https://github.com/YouEclipse/payments/commit/bc4afde24da708d22f67da72a90a1557b1477173)。
+- CI：[33041147119 — success](https://github.com/YouEclipse/payments/actions/runs/33041147119)。
 - 切片：tokenized card automatic-capture SALE；真实 PostgreSQL 保存三层状态、幂等、inbox/outbox；Simulator 模拟外部 Provider，不处理真钱。
 
 ## 主张—实现—测试
 
 下列工程路径均相对于以上固定实现；正文示例是便于阅读的最小模型，不冒充完整存储层。
 
-| 主张 | 工程文件 | 验证 |
-| --- | --- | --- |
-| Authorization 不等于 captured success | `services/payment/internal/domain/model.go`；`services/provider-gateway/internal/gateway/service.go` | `TestSuccessfulAutomaticCaptureTransition`；`TestAuthorizedResponseDoesNotBecomeCapturedSuccess` |
-| UNKNOWN 阻止第二次 Confirm，沿原 Operation 收敛 | Payment domain、app reconciler、Gateway service | `TestUnknownBlocksNewConfirmationAndConverges`；Compose `TestPaymentVerticalSlice` |
-| 成功之后的冲突不能覆盖资金事实 | Payment domain、PostgreSQL store | `TestConflictingTerminalOutcomeRequiresReview`；`TestReviewRequiredIsNotIgnoredAfterTerminalSuccess` |
-| 同事件 ID 的不同内容不是正常重复 | Payment inbox、Gateway webhook store | `TestDuplicateInboxEventRejectsChangedPayloadWithSameCorrelation`；正文 `TestProjectionRetainsSuccessAndFlagsConflicts` |
-| 同步状态与幂等结果必须一起提交 | `services/payment/internal/postgres/store.go` | `TestApplyOutcomeCompletesConfirmationIdempotencyAtomically` |
-| 生产不能开启模拟资金通道 | Gateway config / Provider Simulator | `TestProductionRejectsSimulatorProvider`；环境标准化测试 |
+| Status | 主张 | 工程文件 | 验证 |
+| --- | --- | --- | --- |
+| `implemented` | Authorization 不等于 captured success | `services/payment/internal/domain/model.go`；`services/provider-gateway/internal/gateway/service.go` | `TestSuccessfulAutomaticCaptureTransition`；`TestAuthorizedResponseDoesNotBecomeCapturedSuccess` |
+| `implemented` | UNKNOWN 阻止第二次 Confirm，沿原 Operation 收敛 | Payment domain、app reconciler、Gateway service | `TestUnknownBlocksNewConfirmationAndConverges`；Compose `TestPaymentVerticalSlice` |
+| `implemented` | 成功之后的冲突不能覆盖资金事实 | Payment domain、PostgreSQL store | `TestConflictingTerminalOutcomeRequiresReview`；`TestReviewRequiredIsNotIgnoredAfterTerminalSuccess` |
+| `implemented` | 同事件 ID 的不同内容不是正常重复 | Payment inbox、Gateway webhook store | `TestDuplicateInboxEventRejectsChangedPayloadWithSameCorrelation`；正文 `TestProjectionRetainsSuccessAndFlagsConflicts` |
+| `implemented` | 同步状态与幂等结果必须一起提交 | `services/payment/internal/postgres/store.go` | `TestApplyOutcomeCompletesConfirmationIdempotencyAtomically` |
+| `implemented` | 生产不能开启模拟资金通道 | Gateway config / Provider Simulator | `TestProductionRejectsSimulatorProvider`；环境标准化测试 |
 
 ## 书稿验证
 

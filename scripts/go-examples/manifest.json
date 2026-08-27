@@ -1,7 +1,62 @@
 {
   "go_version": "1.25.0",
-  "requires": {},
+  "requires": {
+    "go.opentelemetry.io/otel": "v1.45.0",
+    "go.opentelemetry.io/otel/sdk": "v1.45.0",
+    "go.opentelemetry.io/otel/trace": "v1.45.0"
+  },
   "groups": [
+    {
+      "name": "appendix_c_launch",
+      "source": "appendices/capacity-planning-and-launch-checklist.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "gate.go"
+        },
+        {
+          "number": 2,
+          "file": "gate_test.go"
+        }
+      ],
+      "tests": [
+        "tests/appendix_c/gate_edges_test.go"
+      ]
+    },
+    {
+      "name": "appendix_a_state",
+      "source": "appendices/payment-state-models.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "state.go"
+        },
+        {
+          "number": 2,
+          "file": "state_test.go"
+        }
+      ],
+      "tests": [
+        "tests/appendix_a/invariant_edges_test.go"
+      ]
+    },
+    {
+      "name": "appendix_b_boundary",
+      "source": "appendices/security-compliance.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "boundary.go"
+        },
+        {
+          "number": 2,
+          "file": "boundary_test.go"
+        }
+      ],
+      "tests": [
+        "tests/appendix_b/boundary_edges_test.go"
+      ]
+    },
     {
       "name": "chapter01_lifecycle",
       "source": "part-1-foundations/payment-lifecycle.md",
@@ -61,6 +116,63 @@
       ]
     },
     {
+      "name": "chapter02_routing",
+      "source": "part-1-foundations/why-payment-routing.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "naive.go",
+          "prefix": "package routing\n\n"
+        },
+        {
+          "number": 2,
+          "file": "routing.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter02/routing_test.go"
+      ]
+    },
+    {
+      "name": "chapter07_percentage",
+      "source": "part-2-routing-engine/cost-aware-routing.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "percentage.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter07/percentage_test.go"
+      ]
+    },
+    {
+      "name": "chapter07_estimate",
+      "source": "part-2-routing-engine/cost-aware-routing.md",
+      "blocks": [
+        {
+          "number": 2,
+          "file": "estimate.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter07/estimate_test.go"
+      ]
+    },
+    {
+      "name": "chapter07_rank",
+      "source": "part-2-routing-engine/cost-aware-routing.md",
+      "blocks": [
+        {
+          "number": 3,
+          "file": "rank.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter07/rank_test.go"
+      ]
+    },
+    {
       "name": "chapter06_legacy",
       "source": "part-2-routing-engine/provider-eligibility.md",
       "blocks": [
@@ -97,6 +209,58 @@
       ],
       "tests": [
         "tests/chapter06/edge_test.go"
+      ]
+    },
+    {
+      "name": "chapter09_naive",
+      "source": "part-2-routing-engine/provider-scoring.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "naive.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter09/naive_test.go"
+      ]
+    },
+    {
+      "name": "chapter09_risk",
+      "source": "part-2-routing-engine/provider-scoring.md",
+      "blocks": [
+        {
+          "number": 2,
+          "file": "risk.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter09/risk_test.go"
+      ]
+    },
+    {
+      "name": "chapter09_scoring",
+      "source": "part-2-routing-engine/provider-scoring.md",
+      "blocks": [
+        {
+          "number": 3,
+          "file": "scoring.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter09/scoring_test.go"
+      ]
+    },
+    {
+      "name": "chapter09_selection",
+      "source": "part-2-routing-engine/provider-scoring.md",
+      "blocks": [
+        {
+          "number": 4,
+          "file": "selection.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter09/selection_test.go"
       ]
     },
     {
@@ -175,6 +339,555 @@
       ],
       "tests": [
         "tests/chapter05/rules_test.go"
+      ]
+    },
+    {
+      "name": "chapter08_performance",
+      "source": "part-2-routing-engine/success-rate-routing.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "lookup.go"
+        },
+        {
+          "number": 2,
+          "file": "estimate.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter08/performance_test.go"
+      ]
+    },
+    {
+      "name": "chapter12_naive",
+      "source": "part-3-reliability/fallback-routing.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "naive.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter12/naive_test.go"
+      ]
+    },
+    {
+      "name": "chapter12_fallback",
+      "source": "part-3-reliability/fallback-routing.md",
+      "blocks": [
+        {
+          "number": 2,
+          "file": "fallback.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter12/fallback_test.go"
+      ]
+    },
+    {
+      "name": "chapter12_successor",
+      "source": "part-3-reliability/fallback-routing.md",
+      "blocks": [
+        {
+          "number": 3,
+          "file": "successor.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter12/successor_test.go"
+      ]
+    },
+    {
+      "name": "chapter11_naive",
+      "source": "part-3-reliability/idempotency.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "naive.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter11/naive_test.go"
+      ]
+    },
+    {
+      "name": "chapter11_command",
+      "source": "part-3-reliability/idempotency.md",
+      "blocks": [
+        {
+          "number": 2,
+          "file": "command.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter11/command_test.go"
+      ]
+    },
+    {
+      "name": "chapter11_replay",
+      "source": "part-3-reliability/idempotency.md",
+      "blocks": [
+        {
+          "number": 3,
+          "file": "replay.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter11/replay_test.go"
+      ]
+    },
+    {
+      "name": "chapter11_providercommand",
+      "source": "part-3-reliability/idempotency.md",
+      "blocks": [
+        {
+          "number": 4,
+          "file": "command.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter11/providercommand_test.go"
+      ]
+    },
+    {
+      "name": "chapter13_naive",
+      "source": "part-3-reliability/provider-health.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "naive.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter13/naive_test.go"
+      ]
+    },
+    {
+      "name": "chapter13_health",
+      "source": "part-3-reliability/provider-health.md",
+      "blocks": [
+        {
+          "number": 2,
+          "file": "observation.go"
+        },
+        {
+          "number": 3,
+          "file": "state.go"
+        },
+        {
+          "number": 5,
+          "file": "state_test.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter13/health_edges_test.go"
+      ]
+    },
+    {
+      "name": "chapter13_bulkhead",
+      "source": "part-3-reliability/provider-health.md",
+      "blocks": [
+        {
+          "number": 4,
+          "file": "bulkhead.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter13/bulkhead_test.go"
+      ]
+    },
+    {
+      "name": "chapter10_naive",
+      "source": "part-3-reliability/timeout-and-retry.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "naive.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter10/naive_test.go"
+      ]
+    },
+    {
+      "name": "chapter10_observation",
+      "source": "part-3-reliability/timeout-and-retry.md",
+      "blocks": [
+        {
+          "number": 2,
+          "file": "observation.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter10/observation_test.go"
+      ]
+    },
+    {
+      "name": "chapter10_recovery",
+      "source": "part-3-reliability/timeout-and-retry.md",
+      "blocks": [
+        {
+          "number": 3,
+          "file": "recovery.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter10/recovery_test.go"
+      ]
+    },
+    {
+      "name": "chapter16_naive",
+      "source": "part-4-operating-at-scale/experimentation.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "naive.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter16/naive_test.go"
+      ]
+    },
+    {
+      "name": "chapter16_srm",
+      "source": "part-4-operating-at-scale/experimentation.md",
+      "blocks": [
+        {
+          "number": 2,
+          "file": "srm.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter16/srm_test.go"
+      ]
+    },
+    {
+      "name": "chapter16_assignment",
+      "source": "part-4-operating-at-scale/experimentation.md",
+      "blocks": [
+        {
+          "number": 3,
+          "file": "assignment.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter16/assignment_test.go"
+      ]
+    },
+    {
+      "name": "chapter16_shadow",
+      "source": "part-4-operating-at-scale/experimentation.md",
+      "blocks": [
+        {
+          "number": 4,
+          "file": "shadow.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter16/shadow_test.go"
+      ]
+    },
+    {
+      "name": "chapter15_naive",
+      "source": "part-4-operating-at-scale/observability.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "naive.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter15/naive_test.go"
+      ]
+    },
+    {
+      "name": "chapter15_metrics",
+      "source": "part-4-operating-at-scale/observability.md",
+      "blocks": [
+        {
+          "number": 2,
+          "file": "metrics.go"
+        },
+        {
+          "number": 4,
+          "file": "metrics_test.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter15/metrics_edges_test.go"
+      ]
+    },
+    {
+      "name": "chapter15_trace",
+      "source": "part-4-operating-at-scale/observability.md",
+      "blocks": [
+        {
+          "number": 3,
+          "file": "trace.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter15/trace_test.go"
+      ]
+    },
+    {
+      "name": "chapter17_naive",
+      "source": "part-4-operating-at-scale/reconciliation.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "naive.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter17/naive_test.go"
+      ]
+    },
+    {
+      "name": "chapter17_reconciliation",
+      "source": "part-4-operating-at-scale/reconciliation.md",
+      "blocks": [
+        {
+          "number": 2,
+          "file": "page.go"
+        },
+        {
+          "number": 3,
+          "file": "classify.go"
+        },
+        {
+          "number": 4,
+          "file": "classify_test.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter17/page_edges_test.go"
+      ]
+    },
+    {
+      "name": "chapter14_selectedonly",
+      "source": "part-4-operating-at-scale/routing-decision-store.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "selected.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter14/selectedonly_test.go"
+      ]
+    },
+    {
+      "name": "chapter14_envelope",
+      "source": "part-4-operating-at-scale/routing-decision-store.md",
+      "blocks": [
+        {
+          "number": 2,
+          "file": "envelope.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter14/envelope_test.go"
+      ]
+    },
+    {
+      "name": "chapter14_pinning",
+      "source": "part-4-operating-at-scale/routing-decision-store.md",
+      "blocks": [
+        {
+          "number": 3,
+          "file": "pinning.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter14/pinning_test.go"
+      ]
+    },
+    {
+      "name": "chapter14_projection",
+      "source": "part-4-operating-at-scale/routing-decision-store.md",
+      "blocks": [
+        {
+          "number": 4,
+          "file": "projection.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter14/projection_test.go"
+      ]
+    },
+    {
+      "name": "chapter18_fact",
+      "source": "part-4-operating-at-scale/settlement.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "fact.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter18/settlementfact_test.go"
+      ]
+    },
+    {
+      "name": "chapter18_match",
+      "source": "part-4-operating-at-scale/settlement.md",
+      "blocks": [
+        {
+          "number": 2,
+          "file": "match.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter18/settlementmatch_test.go"
+      ]
+    },
+    {
+      "name": "chapter18_allocation",
+      "source": "part-4-operating-at-scale/settlement.md",
+      "blocks": [
+        {
+          "number": 3,
+          "file": "allocation.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter18/allocation_test.go"
+      ]
+    },
+    {
+      "name": "chapter20_naive",
+      "source": "part-5-global-routing/configuration-platform.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "naive.go"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "name": "chapter20_approval",
+      "source": "part-5-global-routing/configuration-platform.md",
+      "blocks": [
+        {
+          "number": 2,
+          "file": "approval.go"
+        },
+        {
+          "number": 4,
+          "file": "approval_test.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter20/approval_edges_test.go"
+      ]
+    },
+    {
+      "name": "chapter20_runtime",
+      "source": "part-5-global-routing/configuration-platform.md",
+      "blocks": [
+        {
+          "number": 3,
+          "file": "runtime.go"
+        },
+        {
+          "number": 5,
+          "file": "runtime_test.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter20/runtime_edges_test.go"
+      ]
+    },
+    {
+      "name": "chapter21_ope",
+      "source": "part-5-global-routing/intelligent-routing.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "estimate.go"
+        },
+        {
+          "number": 4,
+          "file": "estimate_test.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter21/ope_edges_test.go"
+      ]
+    },
+    {
+      "name": "chapter21_model",
+      "source": "part-5-global-routing/intelligent-routing.md",
+      "blocks": [
+        {
+          "number": 2,
+          "file": "model.go"
+        },
+        {
+          "number": 3,
+          "file": "batch.go"
+        },
+        {
+          "number": 5,
+          "file": "model_test.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter21/model_edges_test.go"
+      ]
+    },
+    {
+      "name": "chapter19_naive",
+      "source": "part-5-global-routing/multi-region.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "naive.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter19/naive_test.go"
+      ]
+    },
+    {
+      "name": "chapter19_ownership",
+      "source": "part-5-global-routing/multi-region.md",
+      "blocks": [
+        {
+          "number": 2,
+          "file": "ownership.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter19/ownership_test.go"
+      ]
+    },
+    {
+      "name": "chapter19_fencedcommand",
+      "source": "part-5-global-routing/multi-region.md",
+      "blocks": [
+        {
+          "number": 3,
+          "file": "command.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter19/command_test.go"
+      ]
+    },
+    {
+      "name": "chapter22_capacity",
+      "source": "part-6-case-study/global-payment-routing-platform.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "capacity.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter22/capacity_test.go"
       ]
     }
   ]

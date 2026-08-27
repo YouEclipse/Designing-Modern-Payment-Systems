@@ -242,7 +242,7 @@ Customer 用于完成支付的工具或网络，例如银行卡、数字钱包�
 
 ### 支付编排器（Payment Orchestrator）
 
-管理 Payment Intent 生命周期并协调 Risk、Router、Provider Adapter、异步事件和恢复流程的组件。Router 通常只负责产生或更新 Route Plan，不拥有完整支付状态机。
+管理 Payment Intent 生命周期并协调 Risk、Router、Provider Adapter、异步事件和恢复流程的组件。Router 负责产生不可变 Route Plan 与执行 guardrail-only revalidation；Payment Orchestrator 决定是否基于旧 Attempt 证据创建新资金路径，不把 binding 冒充新的 Router 排名。
 
 ## P
 
@@ -314,7 +314,15 @@ Merchant 对已 Capture 的全部或部分金额发起返还的操作。Refund �
 
 ### 路由决策（Routing Decision）
 
-Router 对某个 Payment Attempt 给出的 Candidate 选择、理由和必要的 Fallback Plan。Decision 应关联所用 Rule、Feature、Health 和 Experiment 版本。
+Router 给出的 Candidate 选择或明确负向 outcome，以及对应理由与版本证据。`selected` 分支可以形成不可变 `RoutePlanDecision`；`no_eligible_candidate`、`blocked`、`unsupported`、`requires_review` 或依赖不可用等负向分支不得伪造 Attempt、Selection 或 Provider Operation。
+
+### 路由计划决策（RoutePlanDecision）
+
+Router-authored 的不可变执行许可边界，固定 candidate order、Policy/Capability/Feature 版本、最大 Attempt、预算与有效期。Fallback 的 guardrail-only revalidation 只能 veto 固定下一项，不能新增候选、重排、重评分或延长计划；过期或证据不可用时 Stop。
+
+### Fallback 执行绑定（FallbackExecutionBinding）
+
+Payment Orchestrator 在获准 successor transaction 中写入的不可变对象，引用原 `RoutePlanDecision`、前序 Attempt、固定 next Candidate、新鲜 Risk/guardrail 证据与预算变化。它证明 Payment 为什么创建该 Attempt，但不是 Router Decision，也不授予 Plan 外执行。
 
 ### 路由决策记录（Routing Decision Record）
 

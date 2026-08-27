@@ -402,7 +402,7 @@ Context 是一次 Decision 的快照，不是 Payment 级永久配置。只有�
 
 ## 4.7 配套实现：一次构建、两端验证、原子固定
 
-本章的工程增量可在[固定实现快照](https://github.com/YouEclipse/payments/tree/6583e4dc37b391a8ecbe51830780717f1c0f8843)中查看。Payment 的 `internal/routingcontext` 从已保存 Intent、受控 Merchant Profile 和 Payment Method metadata 构建 `routing_context.v1`；Router 的 `/internal/v2/routing-decisions` 严格解码同一线格式。两端类型分属各自边界，但共享 golden JSON 与完整摘要测试，避免某端修改字段顺序后静默破坏证据。
+本章的工程增量可在[固定实现快照](https://github.com/YouEclipse/payments/tree/bc4afde24da708d22f67da72a90a1557b1477173)中查看。Payment 的 `internal/routingcontext` 从已保存 Intent、受控 Merchant Profile 和 Payment Method metadata 构建 `routing_context.v1`；Router 的 `/internal/v2/routing-decisions` 严格解码同一线格式。两端类型分属各自边界，但共享 golden JSON 与完整摘要测试，避免某端修改字段顺序后静默破坏证据。
 
 这次实现没有假装已经接入 Merchant Service 或生产 Vault。Local 演示仅为 `merchant_demo` 提供有版本、启动后 24 小时到期的 Profile；自定义商户和非 local 环境必须显式提供覆盖所有已认证商户的配置。Simulator metadata 只识别已声明的演示 Token，输出非凭证 domain；无法获得可靠 metadata 时保持 unknown，不按字符串前缀猜可移植性。Profile 到期会拒绝构建，而不是在每笔请求上自动延长。
 

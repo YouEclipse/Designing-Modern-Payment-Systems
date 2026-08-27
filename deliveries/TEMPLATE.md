@@ -7,6 +7,12 @@
 - 新增概念：
 - 明确留给后续章节：
 
+## Status
+
+- `implemented`：
+- `teaching_model`：
+- `target_contract`：
+
 ## 配套实现
 
 - Repository：`YouEclipse/payments`
@@ -16,9 +22,9 @@
 
 ## 主张—实现—验证映射
 
-| 章节主张或不变量 | 工程文件 | 测试或运行证据 |
-| --- | --- | --- |
-|  |  |  |
+| status | 章节主张或不变量 | 工程文件 | 测试或运行证据 |
+| --- | --- | --- | --- |
+| `implemented` / `teaching_model` / `target_contract` |  |  |  |
 
 ## 图表与配图
 

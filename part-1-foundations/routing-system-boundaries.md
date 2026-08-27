@@ -436,13 +436,13 @@ Provider 幂等只保护该 Provider 契约声明的范围，不能让 PSP B 知
 
 ## 3.9 配套 Go 实现如何映射这些边界
 
-本章对应[已验证实现 `adbdf755`](https://github.com/YouEclipse/payments/tree/adbdf75589dcb7b9ae088aa9f92fde2c2f063aeb)，以三个服务呈现这些契约：
+本章对应[已验证实现 `bc4afde`](https://github.com/YouEclipse/payments/tree/bc4afde24da708d22f67da72a90a1557b1477173)，以三个服务呈现这些契约：
 
-- [Router](https://github.com/YouEclipse/payments/tree/adbdf75589dcb7b9ae088aa9f92fde2c2f063aeb/services/router/internal/routing) 生成确定性 Decision，输出 `selected_candidate`、候选顺序、排除证据和策略版本；Candidate 携带 connection ID、revision、namespace 和 Provider / Account / Connector / Region 元数据。
-- [Payment](https://github.com/YouEclipse/payments/blob/adbdf75589dcb7b9ae088aa9f92fde2c2f063aeb/services/payment/internal/app/service.go) 请求 Decision，并在产生外部调用前把 `routing_decision_id` 和完整连接身份固定到 Attempt / Operation；它拥有 Payment 状态与 `UNKNOWN` 恢复。
-- [Gateway](https://github.com/YouEclipse/payments/tree/adbdf75589dcb7b9ae088aa9f92fde2c2f063aeb/services/provider-gateway/internal/gateway) 持久化 Operation、request hash 与 insert-only 连接修订登记，拒绝把已有修订绑定到另一配置；query 与同操作重发沿用原身份。恢复别名必须显式配置，不能创建新的资金操作，也不能仅因 namespace 相同就替另一连接认证 webhook。
+- [Router](https://github.com/YouEclipse/payments/tree/bc4afde24da708d22f67da72a90a1557b1477173/services/router/internal/routing) 生成确定性 Decision，输出 `selected_candidate`、候选顺序、排除证据和策略版本；Candidate 携带 connection ID、revision、namespace 和 Provider / Account / Connector / Region 元数据。
+- [Payment](https://github.com/YouEclipse/payments/blob/bc4afde24da708d22f67da72a90a1557b1477173/services/payment/internal/app/service.go) 请求 Decision，并在产生外部调用前把 `routing_decision_id` 和完整连接身份固定到 Attempt / Operation；它拥有 Payment 状态与 `UNKNOWN` 恢复。
+- [Gateway](https://github.com/YouEclipse/payments/tree/bc4afde24da708d22f67da72a90a1557b1477173/services/provider-gateway/internal/gateway) 持久化 Operation、request hash 与 insert-only 连接修订登记，拒绝把已有修订绑定到另一配置；query 与同操作重发沿用原身份。恢复别名必须显式配置，不能创建新的资金操作，也不能仅因 namespace 相同就替另一连接认证 webhook。
 
-[该提交的 CI](https://github.com/YouEclipse/payments/actions/runs/32919381068) 已验证真实 PostgreSQL 迁移、连接身份冲突、乱序证据、race 与 Compose E2E；其中 `UNKNOWN` 用例同时检查 Payment/Gateway 的 connection ID、revision、namespace 一致及只有一个资金路径。完整证据映射见[第 3 章交付记录](../deliveries/chapter-03-routing-system-boundaries.md)。
+[该提交的 CI](https://github.com/YouEclipse/payments/actions/runs/33041147119) 已验证真实 PostgreSQL 迁移、连接身份冲突、乱序证据、race 与 Compose E2E；其中 `UNKNOWN` 用例同时检查 Payment/Gateway 的 connection ID、revision、namespace 一致及只有一个资金路径。完整证据映射见[第 3 章交付记录](../deliveries/chapter-03-routing-system-boundaries.md)。
 
 当前纵向切片刻意很窄：只处理 tokenized card、`capture_method=automatic` 和 Provider-native `SALE`；Simulator 只允许 local / development / test 环境。它已经能够表达成功、明确拒绝、响应丢失后的 `UNKNOWN`、query / webhook 收敛，以及冲突证据触发 `review_required`，但不能处理真钱，也没有实现本章明确留给后续的 manual capture、Void、Refund、完整 Routing Context、动态评分或跨 Provider Fallback。
 

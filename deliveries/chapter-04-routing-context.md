@@ -7,10 +7,16 @@
 - 本章增量：`routing_context.v1`、Payment Builder、Router 严格 reader、共享 wire golden、在线 freshness 与 Context/Decision JSONB 快照。
 - 后续范围：费用、成功率、Risk Action、动态 Health、Decision Store 与配置平台分别留给第 7～9、13、14、20 章。
 
+## Status
+
+- `implemented`：固定实现中的 `routing_context.v1` Builder/reader、严格 wire、freshness、摘要与 Attempt 事务内证据固定。
+- `teaching_model`：正文 5 个 Go 块中的参数/对象反例、typed Context 与 Builder 模型。
+- `target_contract`：真实 Merchant/Payment Method/Risk 来源、完整历史 Artifact、动态 Health、配置控制面与真实在线数据源；Cost/Performance 的当前状态以第 7～9 章 manifest 为准。
+
 ## 配套实现
 
-- 固定实现：[6583e4dc37b391a8ecbe51830780717f1c0f8843](https://github.com/YouEclipse/payments/commit/6583e4dc37b391a8ecbe51830780717f1c0f8843)。
-- CI：[32987908560 — success](https://github.com/YouEclipse/payments/actions/runs/32987908560)。
+- 固定实现：[bc4afde24da708d22f67da72a90a1557b1477173](https://github.com/YouEclipse/payments/commit/bc4afde24da708d22f67da72a90a1557b1477173)。
+- CI：[33041147119 — success](https://github.com/YouEclipse/payments/actions/runs/33041147119)。
 - API：Payment 显式选择 v2 writer；Router `/internal/v2/routing-decisions` 严格读取 `routing_context.v1`，失败时不自动回退 v1。
 - 持久化：迁移 `004` 允许历史 Attempt 保持双 NULL，新执行则把 Context 与 Decision 在 Provider dispatch 前一起固定。
 
@@ -18,15 +24,15 @@
 
 工程文件相对于固定实现。
 
-| 主张 | 工程文件 | 验证 |
-| --- | --- | --- |
-| Context 不携带 Token/PAN/CVV | Payment/Router `internal/routingcontext`；Router strict HTTP reader | `TestSnapshotIsDeterministicAndContainsNoCredentials`；`TestV2StrictHTTPBoundaryRejectsWithoutEchoingUntrustedInput` |
-| 两端独立类型仍解释同一 wire | `contracts/internal/fixtures/routing-context-v1.json` | 两端 golden tests 与完整 SHA-256 digest |
-| known/unknown/stale 不互相冒充 | 两端 Context validation 与 Payment Builder | `TestBuilderRejectsMissingStaleAndInvalidInputs`；`TestContextObservedStatesNeverCoerceToKnown` |
-| Context 构建后不受输入别名修改 | Payment `routingcontext.Builder` | `TestBuilderDoesNotAliasMutableMetadataOrProfileInput` |
-| 在线执行拒绝过期输入和配置 | Router v2 HTTP admission | `TestV2OnlineFreshnessAndMissingConfigNeverFallBackToV1`；跨到期边界复检测试 |
-| 决策证据与 Intent、Attempt、连接绑定 | Payment `postgres/routing_evidence.go` 与迁移 `004` | unit 与 PostgreSQL integration immutable tests |
-| `UNKNOWN` 恢复不重建 Context/Decision | Payment Operation 恢复路径；Compose flow | E2E response-loss 场景只有一个 Attempt 和一个 Provider Operation |
+| Status | 主张 | 工程文件 | 验证 |
+| --- | --- | --- | --- |
+| `implemented` | Context 不携带 Token/PAN/CVV | Payment/Router `internal/routingcontext`；Router strict HTTP reader | `TestSnapshotIsDeterministicAndContainsNoCredentials`；`TestV2StrictHTTPBoundaryRejectsWithoutEchoingUntrustedInput` |
+| `implemented` | 两端独立类型仍解释同一 wire | `contracts/internal/fixtures/routing-context-v1.json` | 两端 golden tests 与完整 SHA-256 digest |
+| `implemented` | known/unknown/stale 不互相冒充 | 两端 Context validation 与 Payment Builder | `TestBuilderRejectsMissingStaleAndInvalidInputs`；`TestContextObservedStatesNeverCoerceToKnown` |
+| `implemented` | Context 构建后不受输入别名修改 | Payment `routingcontext.Builder` | `TestBuilderDoesNotAliasMutableMetadataOrProfileInput` |
+| `implemented` | 在线执行拒绝过期输入和配置 | Router v2 HTTP admission | `TestV2OnlineFreshnessAndMissingConfigNeverFallBackToV1`；跨到期边界复检测试 |
+| `implemented` | 决策证据与 Intent、Attempt、连接绑定 | Payment `postgres/routing_evidence.go` 与迁移 `004` | unit 与 PostgreSQL integration immutable tests |
+| `implemented` | `UNKNOWN` 恢复不重建 Context/Decision | Payment Operation 恢复路径；Compose flow | E2E response-loss 场景只有一个 Attempt 和一个 Provider Operation |
 
 ## 书稿验证
 

@@ -14,7 +14,7 @@ Problem → Simple Design → Problems at Scale → Production Design → Trade-
 
 读者会先看到一个足够简单的系统如何工作，再观察它在哪些真实条件下失效，最后理解新组件为什么出现、解决了什么问题，又带来了哪些代价。
 
-> 本仓库是中文版第一版。内容完成后，将在此基础上整体翻译并重写为英文版。
+> 中文版正文第一版已经完整交付：全书包含 22 章、3 篇附录与术语表；正文中的 Go 教学示例、Mermaid 图和明确引用的当前实现均纳入可重复验证。配套系统只在各章 delivery manifest 标为 `implemented` 且由固定代码 SHA/绿色 CI 支撑的范围内算已实现；`teaching_model` 与 `target_contract` 不代表对应 runtime 已存在。英文版将在此基础上整体翻译并重写。
 
 ## 代码示例约定
 
@@ -26,7 +26,9 @@ JSON、SQL、Mermaid 和少量伪代码仍会分别用于表达 API 数据、存
 
 本书同步维护一个可运行的微服务实现：[YouEclipse/payments](https://github.com/YouEclipse/payments)。它不是把章节里的片段简单拼在一起，而是用 Payment、Router、Provider Gateway 和仅限开发/测试的 Provider Simulator 跑通真实 PostgreSQL 上的纵向闭环。
 
-当前实现聚焦 tokenized card 的 automatic capture，并把超时视为 `UNKNOWN`：系统会沿用同一个 Provider Operation 查询或等待 webhook，不会因为没有收到响应就盲目切换 PSP。后续章节新增状态、规则、Provider Adapter、对账和运营能力时，配套仓库也会同步演进。Simulator 不处理真实资金；接入 live PSP 仍需要真实 connector、密钥管理、安全合规与运营准备。
+当前实现聚焦 tokenized card 的 automatic capture，并把超时视为 `UNKNOWN`：系统会沿用同一个 Provider Operation 查询或等待 webhook，不会因为没有收到响应就盲目切换 PSP。Router v3 负责受约束、可解释的决策，Payment 保存资金状态与恢复预算，Provider Gateway 保存不可变连接身份和追加式外部证据。Simulator 不处理真实资金；接入 live PSP 仍需要真实 connector、密钥管理、安全合规与运营准备，因此这是一套可运行、可验证的支付核心，而不是可直接处理真钱的成品平台。
+
+本版全书统一固定到配套实现 [bc4afde24da708d22f67da72a90a1557b1477173](https://github.com/YouEclipse/payments/commit/bc4afde24da708d22f67da72a90a1557b1477173)，对应 [CI run 33041147119（success）](https://github.com/YouEclipse/payments/actions/runs/33041147119)。每章与附录仍以 delivery manifest 的 claim→code→test 映射为准，不能仅凭全书级提交链接推导某项能力已经实现。
 
 ## 这本书适合谁
 
@@ -92,4 +94,4 @@ JSON、SQL、Mermaid 和少量伪代码仍会分别用于表达 API 数据、存
 
 ## 项目维护
 
-后续章节统一遵循[写作与实现工作流](WORKFLOW.md)，把章节正文、Go 微服务增量、支付语义审计、图表配图、真实数据库验证和双仓库发布作为同一个交付闭环。
+本书的后续修订统一遵循[写作与实现工作流](WORKFLOW.md)，把章节正文、Go 微服务增量、支付语义审计、图表配图、真实数据库验证和双仓库发布作为同一个交付闭环。每章与附录的固定代码、CI、claim→code→test 映射和能力边界可从[交付证据索引](deliveries/README.md)进入。

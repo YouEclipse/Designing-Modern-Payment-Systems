@@ -399,7 +399,7 @@ func Route(candidates []Candidate) (Decision, error) {
 
 后续章节会把每一步替换为可独立测试和演进的组件。
 
-配套代码仓库中的[真实 Router 实现](https://github.com/YouEclipse/payments/tree/b5de28105f5de92de1c1226fbed5c57442984906/services/router/internal/routing)目前实现了可运行的 Eligibility 硬约束过滤与版本化静态策略排序，并保留候选排除原因；完整规则求值、成功率、成本与风险评分会随后续章节继续演进。
+配套代码仓库的[固定实现](https://github.com/YouEclipse/payments/tree/bc4afde24da708d22f67da72a90a1557b1477173/services/router/internal/routing)仍保留本章起点所需的 v1 Eligibility 硬约束过滤、版本化静态策略排序与候选排除原因；后续章节推导出的规则、成功率、成本与风险约束则由同一提交中的 v2/v3 pipeline 实现。这样既能重放简单设计，也不会把章节叙事停留在早期快照。
 
 ## 2.11 Fallback 为什么必须理解 Payment Attempt
 
