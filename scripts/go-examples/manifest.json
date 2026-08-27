@@ -6,29 +6,176 @@
       "name": "chapter01_lifecycle",
       "source": "part-1-foundations/payment-lifecycle.md",
       "blocks": [
-        {"number": 1, "file": "sale.go"},
-        {"number": 2, "file": "anti_example.go", "prefix": "package lifecycle\nimport \"context\"\nfunc naiveConfirm(ctx context.Context, gateway Gateway, command SaleCommand, markPaymentFailed func(string) error, markPaymentPaid func(string,string) error) error {\n", "suffix": "}\n"},
-        {"number": 3, "file": "projection.go"}
+        {
+          "number": 1,
+          "file": "sale.go"
+        },
+        {
+          "number": 2,
+          "file": "anti_example.go",
+          "prefix": "package lifecycle\nimport \"context\"\nfunc naiveConfirm(ctx context.Context, gateway Gateway, command SaleCommand, markPaymentFailed func(string) error, markPaymentPaid func(string,string) error) error {\n",
+          "suffix": "}\n"
+        },
+        {
+          "number": 3,
+          "file": "projection.go"
+        }
       ],
-      "tests": ["tests/chapter01/projection_test.go"]
+      "tests": [
+        "tests/chapter01/projection_test.go"
+      ]
     },
     {
       "name": "chapter03_naive",
       "source": "part-1-foundations/routing-system-boundaries.md",
-      "blocks": [{"number": 1, "file": "naive.go"}],
+      "blocks": [
+        {
+          "number": 1,
+          "file": "naive.go"
+        }
+      ],
       "tests": []
     },
     {
       "name": "chapter03_contract",
       "source": "part-1-foundations/routing-system-boundaries.md",
-      "blocks": [{"number": 2, "file": "contract.go"}],
+      "blocks": [
+        {
+          "number": 2,
+          "file": "contract.go"
+        }
+      ],
       "tests": []
     },
     {
       "name": "chapter03_orchestration",
       "source": "part-1-foundations/routing-system-boundaries.md",
-      "blocks": [{"number": 3, "file": "pin.go"}],
-      "tests": ["tests/chapter03/pin_test.go"]
+      "blocks": [
+        {
+          "number": 3,
+          "file": "pin.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter03/pin_test.go"
+      ]
+    },
+    {
+      "name": "chapter06_legacy",
+      "source": "part-2-routing-engine/provider-eligibility.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "candidate.go",
+          "prefix": "package routing\n"
+        },
+        {
+          "number": 2,
+          "file": "eligibility.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter06/legacy_test.go"
+      ]
+    },
+    {
+      "name": "chapter06_capability",
+      "source": "part-2-routing-engine/provider-eligibility.md",
+      "blocks": [
+        {
+          "number": 3,
+          "file": "catalog.go"
+        },
+        {
+          "number": 4,
+          "file": "filter.go"
+        },
+        {
+          "number": 5,
+          "file": "filter_test.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter06/edge_test.go"
+      ]
+    },
+    {
+      "name": "chapter04_naive_parameters",
+      "source": "part-2-routing-engine/routing-context.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "parameters.go"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "name": "chapter04_naive_objects",
+      "source": "part-2-routing-engine/routing-context.md",
+      "blocks": [
+        {
+          "number": 2,
+          "file": "objects.go"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "name": "chapter04_legacy",
+      "source": "part-2-routing-engine/routing-context.md",
+      "blocks": [
+        {
+          "number": 3,
+          "file": "request.go"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "name": "chapter04_context",
+      "source": "part-2-routing-engine/routing-context.md",
+      "blocks": [
+        {
+          "number": 4,
+          "file": "context.go"
+        },
+        {
+          "number": 5,
+          "file": "digest.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter04/context_test.go"
+      ]
+    },
+    {
+      "name": "chapter05_naive",
+      "source": "part-2-routing-engine/rule-based-routing.md",
+      "blocks": [
+        {
+          "number": 1,
+          "file": "naive.go"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "name": "chapter05_rules",
+      "source": "part-2-routing-engine/rule-based-routing.md",
+      "blocks": [
+        {
+          "number": 2,
+          "file": "truth.go"
+        },
+        {
+          "number": 3,
+          "file": "preference.go"
+        }
+      ],
+      "tests": [
+        "tests/chapter05/rules_test.go"
+      ]
     }
   ]
 }
