@@ -1,48 +1,48 @@
-# 第 6 章《Provider Eligibility》交付记录
+# 第 6 章《服务商准入筛选》交付记录
 
 ## 章节契约
 
-- 核心命题：进入排序集合是一项必须由 connection-level、带来源与时效的证据证明的硬资格；任何偏好、成本或实验都不能越过它。
-- 演进线：Provider 品牌布尔值 → 账户/Region/Token 差异 → 多维三值谓词 → 不可变 Capability Catalog 与 fail-closed 过滤。
-- 本章增量：`capability_catalog.v1` compiler/filter、完整 Candidate manifest、Descriptor provenance/freshness、逐候选 Eligibility evidence。
-- 后续范围：金额区间、Merchant 合同、Compliance、Health、费用与成功率分别留给后续 Catalog 版本及第 7、8、13 章。
+- 核心命题：进入排序集合必须由连接级、带来源与时效的证据证明，是一项硬性准入条件；任何偏好、成本或实验都不能越过它。
+- 演进线：支付服务商品牌布尔值 → 账户、区域与令牌差异 → 多维三值谓词 → 不可变能力目录与“证据不足即拒绝”的准入筛选。
+- 本章增量：`capability_catalog.v1` 编译器与准入筛选器、完整候选通道清单、描述符来源与新鲜度，以及逐候选通道的准入证据。
+- 后续范围：金额区间、商户合同、合规、健康度、费用与成功率分别留给后续能力目录版本及第 7、8、13 章。
 
-## Status
+## 能力状态
 
-- `implemented`：固定实现中的 `capability_catalog.v1` 编译/过滤、精确 connection revision、三值事实、freshness 与逐候选证据。
-- `teaching_model`：正文 5 个 Go 块中的 legacy filter 与 Capability Catalog 最小模型。
-- `target_contract`：金额、Merchant/Compliance、在线 Provider discovery、动态 Health、真实账户合同与 Token portability。
+- `implemented`：固定实现中的 `capability_catalog.v1` 编译与准入筛选、精确连接修订、三值事实、新鲜度与逐候选证据。
+- `teaching_model`：正文 5 个 Go 代码块中的旧版筛选器与能力目录最小模型。
+- `target_contract`：金额、商户与合规约束、在线服务商发现、动态健康度、真实账户合同与令牌可移植性。
 
 ## 配套实现
 
 - 固定实现：[bc4afde24da708d22f67da72a90a1557b1477173](https://github.com/YouEclipse/payments/commit/bc4afde24da708d22f67da72a90a1557b1477173)。
-- CI：[33041147119 — success](https://github.com/YouEclipse/payments/actions/runs/33041147119)。
-- 纵向切片：Router v2 按精确 connection revision 过滤 Currency、country、Payment Method、Operation/Capture、credential domain 与时间；Rule 只接收 eligible IDs。
+- 持续集成：[33041147119 — 成功](https://github.com/YouEclipse/payments/actions/runs/33041147119)。
+- 纵向切片：路由服务 v2 按精确连接修订，对币种、国家、支付方式、资金操作、请款模式、凭证域与时间做准入筛选；规则只接收已准入的候选通道编号。
 
 ## 主张—实现—测试
 
 工程文件相对于固定实现。
 
-| Status | 主张 | 工程文件 | 验证 |
+| 状态 | 主张 | 工程文件 | 验证 |
 | --- | --- | --- | --- |
-| `implemented` | 能力属于精确 connection revision，不属于 PSP 品牌 | capability Artifact/Catalog | `TestCatalogEligibilityUsesExactConnectionAndThreeValues` |
-| `implemented` | 半快照、别名与含糊 Artifact 不能启用 | capability compiler | `TestCatalogRejectsPartialAndAmbiguousArtifacts` |
-| `implemented` | unknown/stale fail closed，已知 no 保留解释 | capability filter + decision evidence | Catalog unit tests；`TestV2UnknownCredentialIsExplicitNoCandidate` |
-| `implemented` | Currency/credential 硬约束先于 Rule | decision pipeline | `TestPipelineForceAndSplitNeverOverrideCredentialOrCurrencyEligibility` |
-| `implemented` | Snapshot 可重放但过期后不可用于新执行 | catalog/rules validity + HTTP admission | replay/online execution contrast tests |
-| `implemented` | 无候选返回证据且不触发 Gateway | Router v2 HTTP；Payment client | `422` evidence tests；Compose no-eligible path |
-| `implemented` | 选中连接与执行连接保持同一身份 | Decision、Payment Attempt/Operation、Gateway | PostgreSQL integration 与 Compose tuple assertions |
+| `implemented` | 能力属于精确连接修订，不属于 PSP 品牌 | 能力制品与目录 | `TestCatalogEligibilityUsesExactConnectionAndThreeValues` |
+| `implemented` | 半快照、别名与含糊制品不能启用 | 能力编译器 | `TestCatalogRejectsPartialAndAmbiguousArtifacts` |
+| `implemented` | 未知或过期时一律拒绝，已知不支持时保留解释 | 能力准入筛选器与决策证据 | 能力目录单元测试；`TestV2UnknownCredentialIsExplicitNoCandidate` |
+| `implemented` | 币种与凭证的硬约束先于规则 | 决策流水线 | `TestPipelineForceAndSplitNeverOverrideCredentialOrCurrencyEligibility` |
+| `implemented` | 快照可重放，但过期后不可用于新执行 | 目录与规则有效期、HTTP 准入 | 重放与在线执行对照测试 |
+| `implemented` | 无候选通道时返回证据且不触发网关 | 路由服务 v2 HTTP；支付客户端 | `422` 证据测试；Compose 无合格候选路径 |
+| `implemented` | 选中连接与执行连接保持同一身份 | 路由决策、支付尝试、资金操作、服务商网关 | PostgreSQL 集成测试与 Compose 元组断言 |
 
 ## 图表与配图
 
-- 4 个 Mermaid 已实际渲染，覆盖硬约束顺序、多维谓词、snapshot refresh 与 Adapter/Gateway 边界。
+- 4 个 Mermaid 已实际渲染，覆盖硬约束顺序、多维谓词、快照刷新与适配器、网关边界。
 - Ian 正文配图 `assets/provider-eligibility-illustrations/01-same-brand-different-doors.png` 为 1672×941，表达“同一 PSP 品牌不等于同一扇门”，尺寸、路径和正文嵌入已检查。
-- 本章 5 个 Go 块由正文提取为 2 个独立 package，compile/race/vet 通过；附加测试覆盖 freshness、边界和不可复活约束。
+- 本章 5 个 Go 代码块由正文提取为 2 个独立包，编译、竞态检测和静态检查通过；附加测试覆盖新鲜度、边界和不可复活约束。
 
 ## 发布验证
 
-固定实现的 unit、race、vet、OpenAPI、真实 PostgreSQL integration、服务镜像构建和 Compose E2E 均在 CI run `33041147119` 成功；书稿本地链接、Mermaid、图片和固定实现链接通过检查。代码远端 SHA 已核对；书稿 revision 由包含本记录的 Git 历史确定。
+固定实现的单元测试、竞态检测、静态检查、OpenAPI、真实 PostgreSQL 集成测试、服务镜像构建和 Compose 端到端测试均在持续集成任务 `33041147119` 中成功；书稿本地链接、Mermaid、图片和固定实现链接通过检查。代码远端提交值已核对；书稿版本由包含本记录的 Git 历史确定。
 
 ## 能力边界
 
-当前六组 wire 能力不包括金额范围、Merchant allowlist、Compliance Tags、Health 或在线 Provider discovery。Local Catalog 是两个 Simulator connection 的演示事实，不证明真实 PSP 账户、合同、Token portability 或监管资格；配图中的多个“门”不是多个 live PSP。没有真实 PSP sandbox 或 live payment 能力。
+当前六组线格式能力不包括金额范围、商户允许清单、合规标签、健康度或在线服务商发现。本地能力目录是两个模拟器连接的演示事实，不证明真实 PSP 账户、合同、令牌可移植性或监管资格；配图中的多个“门”不是多个真实生产 PSP。系统没有真实 PSP 沙箱或生产支付能力。
