@@ -4,7 +4,7 @@
 
 本附录为[第 1 章](../part-1-foundations/payment-lifecycle.md)、[第 10～12 章](../part-3-reliability/timeout-and-retry.md)和[第 17 章](../part-4-operating-at-scale/reconciliation.md)提供同一份状态参考。正文中的服务商请求泛指对外请求；配套代码的逻辑资金对象统一叫 `ProviderOperation`。一次支付操作可以产生多次 HTTP 请求，但这些请求不能因此获得多个资金身份。
 
-这里以[第 22 章交付说明](../deliveries/chapter-22-global-payment-routing-platform.md)固定的已验证实现为基线：令牌化卡支付、自动请款、单次 `sale`，加上持久恢复截止时间、预算与租约、首次派发标记及支付网关追加式服务商观察。该版本的领域测试、真实 PostgreSQL 与 Compose 端到端测试由同一次 CI 运行验证。下文明确分开“当前实现”“已定义但未接通”和“未来参考”，不因为枚举里出现某个单词，就宣称相应产品流程已经存在。
+这里以[配套系统的固定代码版本](https://github.com/YouEclipse/payments/commit/bc4afde24da708d22f67da72a90a1557b1477173)为基线：令牌化卡支付、自动请款、单次 `sale`，加上持久恢复截止时间、预算与租约、首次派发标记及支付网关追加式服务商观察。该版本的领域测试、真实 PostgreSQL 与 Compose 端到端测试由[同一次持续集成运行](https://github.com/YouEclipse/payments/actions/runs/33041147119)验证。下文明确分开“当前实现”“已定义但未接通”和“未来参考”，不因为枚举里出现某个单词，就宣称相应产品流程已经存在。
 
 ## A.1 三层对象与两种基数
 
@@ -26,7 +26,7 @@ erDiagram
 
 ## A.2 支付意图：业务结果与完整性是两根轴
 
-当前支付意图的 `status` 枚举如下，精确定义位于配套实现的 `services/payment/internal/domain/model.go`；固定代码修订版见上述交付说明。
+当前支付意图的 `status` 枚举如下，精确定义位于配套实现的[支付领域模型](https://github.com/YouEclipse/payments/blob/bc4afde24da708d22f67da72a90a1557b1477173/services/payment/internal/domain/model.go)。
 
 | 状态 | 本书中的含义 | 当前可达性 |
 | --- | --- | --- |
@@ -303,4 +303,4 @@ func TestCapturedSaleInvariants(t *testing.T) {
 
 排查一笔支付时，先定位支付意图、支付尝试和支付操作的精确身份，再看原始证据和确定性，最后看投影状态。扩展新支付方式时，先写转换前提与不可违反的不变量，再修改枚举；先证明重复、乱序、状态未知和并发边界，再增加正常路径。
 
-本附录的状态图不是所有银行卡、钱包和银行转账的通用网络协议，也不是账本。它统一的是平台的责任边界：同一业务目标不能因为一次传输失败而凭空多出资金路径；已确认事实不能因为迟到事件而消失；任何新能力都必须同时拥有领域规则、持久约束、接口契约和反例测试。完整上线核对见[附录 C](capacity-planning-and-launch-checklist.md)，当前实现、教学模型与目标合同的逐项状态见[附录 A 交付记录](../deliveries/appendix-a-payment-state-models.md)。
+本附录的状态图不是所有银行卡、钱包和银行转账的通用网络协议，也不是账本。它统一的是平台的责任边界：同一业务目标不能因为一次传输失败而凭空多出资金路径；已确认事实不能因为迟到事件而消失；任何新能力都必须同时拥有领域规则、持久约束、接口契约和反例测试。完整上线核对见[附录 C](capacity-planning-and-launch-checklist.md)。

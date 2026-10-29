@@ -375,7 +375,7 @@ stateDiagram-v2
 
 当前切片只执行令牌化银行卡的自动请款 `SALE`，使用受环境门禁保护的模拟器，不处理真钱。手动请款、撤销、退款、3DS、结算与拒付在本章是设计语义，不是已经开放的 API；上面的状态图也不是代码枚举的逐字抄本。准确枚举和已实现转换见[附录 A](../appendices/payment-state-models.md)。
 
-[此提交的绿色持续集成（CI）](https://github.com/YouEclipse/payments/actions/runs/33041147119)覆盖真实 PostgreSQL 与 Compose：成功、明确拒绝、响应丢失后 `UNKNOWN` 收敛，以及整个未知窗口只有一次支付尝试和一个资金操作。读者可按[交付记录](../deliveries/chapter-01-payment-lifecycle.md)定位对应测试；最终成功不足以证明安全，单资金路径和冲突隔离才是同时需要验证的事实。
+[此提交的绿色持续集成（CI）](https://github.com/YouEclipse/payments/actions/runs/33041147119)覆盖真实 PostgreSQL 与 Compose：成功、明确拒绝、响应丢失后 `UNKNOWN` 收敛，以及整个未知窗口只有一次支付尝试和一个资金操作。最终成功不足以证明安全，单资金路径和冲突隔离才是同时需要验证的事实。
 
 ## 1.5 故障模式：生命周期在坏天气里是否仍然成立
 

@@ -260,7 +260,7 @@ func TestGlobalLiveGateFailsClosed(t *testing.T) {
 
 ## C.8 如何阅读本仓库现有证据
 
-本轮已验证实现的固定提交与 CI 运行记录在[第 22 章交付说明](../deliveries/chapter-22-global-payment-routing-platform.md)中；CI 门禁包含 Go 单元测试、竞态检测、静态检查、构建与 OpenAPI 检查、真实 PostgreSQL 集成、服务镜像、Compose 就绪检查和支付端到端测试。它证明当前窄切片的工程基线，不证明目标环境的生产吞吐。书稿与代码仓库当前均为私有；这些链接只对获授权的 GitHub 身份可见，本书不会为获得匿名可访问性而改变仓库可见性，也不把无法匿名打开误写成 CI 未运行。
+本版配套系统采用[固定代码版本](https://github.com/YouEclipse/payments/commit/bc4afde24da708d22f67da72a90a1557b1477173)及其[持续集成记录](https://github.com/YouEclipse/payments/actions/runs/33041147119)；CI 门禁包含 Go 单元测试、竞态检测、静态检查、构建与 OpenAPI 检查、真实 PostgreSQL 集成、服务镜像、Compose 就绪检查和支付端到端测试。它证明当前窄切片的工程基线，不证明目标环境的生产吞吐。书稿与代码仓库当前均为私有；这些链接只对获授权的 GitHub 身份可见，本书不会为获得匿名可访问性而改变仓库可见性，也不把无法匿名打开误写成 CI 未运行。
 
 | 证据层 | 固定基线已有内容 | 仍需补齐的目标证明 |
 | --- | --- | --- |
@@ -277,4 +277,4 @@ func TestGlobalLiveGateFailsClosed(t *testing.T) {
 
 容量结论应写成：“在这些版本、资源、配额、流量分布和故障条件下，系统满足这些延迟、错误、积压与资金不变量；超过这些条件尚未验证。”它比一个孤立 TPS 数字更长，却能让下一次扩容、服务商故障或配置发布真正复用现有证据。
 
-能证明的范围内才允许发布；缺少必要证据就不发布。两者都是有价值的工程结果，区别在于能否据此安全地采取下一步行动，而不在于报告最后是不是绿色。当前 CI 基线、教学门禁与尚缺目标环境证据的逐项状态见[附录 C 交付记录](../deliveries/appendix-c-capacity-planning-and-launch-checklist.md)。
+能证明的范围内才允许发布；缺少必要证据就不发布。两者都是有价值的工程结果，区别在于能否据此安全地采取下一步行动，而不在于报告最后是不是绿色。

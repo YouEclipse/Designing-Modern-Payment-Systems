@@ -442,7 +442,7 @@ flowchart LR
 * [支付服务](https://github.com/YouEclipse/payments/blob/bc4afde24da708d22f67da72a90a1557b1477173/services/payment/internal/app/service.go)请求决策，并在产生外部调用前把 `routing_decision_id` 和完整连接身份固定到支付尝试 / 资金操作；它拥有支付状态与 `UNKNOWN` 恢复。
 * [服务商网关](https://github.com/YouEclipse/payments/tree/bc4afde24da708d22f67da72a90a1557b1477173/services/provider-gateway/internal/gateway)持久化资金操作、请求摘要与只增不改的连接修订登记，拒绝把已有修订绑定到另一配置；查询与同操作重发沿用原身份。恢复别名必须显式配置，不能创建新的资金操作，也不能仅因命名空间相同就替另一连接认证回调通知。
 
-[该提交的持续集成（CI）](https://github.com/YouEclipse/payments/actions/runs/33041147119)已验证真实 PostgreSQL 迁移、连接身份冲突、乱序证据、竞态检测与 Compose 端到端测试；其中 `UNKNOWN` 用例同时检查支付服务/服务商网关的连接 ID、修订、命名空间一致及只有一个资金路径。完整证据映射见[第 3 章交付记录](../deliveries/chapter-03-routing-system-boundaries.md)。
+[该提交的持续集成（CI）](https://github.com/YouEclipse/payments/actions/runs/33041147119)已验证真实 PostgreSQL 迁移、连接身份冲突、乱序证据、竞态检测与 Compose 端到端测试；其中 `UNKNOWN` 用例同时检查支付服务/服务商网关的连接 ID、修订、命名空间一致及只有一个资金路径。
 
 当前纵向切片刻意很窄：只处理令牌化银行卡、`capture_method=automatic` 和服务商原生 `SALE`；模拟器只允许本地、开发或测试环境。它已经能够表达成功、明确拒绝、响应丢失后的 `UNKNOWN`、查询与回调通知收敛，以及冲突证据触发 `review_required`，但不能处理真钱，也没有实现本章明确留给后续的手动请款、撤销、退款、完整路由上下文、动态评分或跨服务商后备切换。
 

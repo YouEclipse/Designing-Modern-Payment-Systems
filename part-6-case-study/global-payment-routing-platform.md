@@ -446,7 +446,7 @@ HTTP 层保留各状态码与传输错误，业务层另列成功、明确拒绝
 
 因此，正确结论是“有一个具备重要支付安全边界的可运行起点”，不是“已经拥有覆盖 15 家 PSP、20 种支付方式的全球真钱平台”。代码文件存在、单元测试通过或 Compose 启动，都不能把未实现行自动变成已实现。
 
-本章的工程增量不增加新的业务抽象：把四条旅程编排到 `test/system`，复用现有故障注入，增加标准库容量模型命令行工具，并让 Makefile 与 CI 输出版本化结果。[附录 C](../appendices/capacity-planning-and-launch-checklist.md)复用这份证据，不再创建第二套压测体系；状态与安全核查分别对照[附录 A](../appendices/payment-state-models.md)、[附录 B](../appendices/security-compliance.md)。这些工具仍是未实现边界；本章固定代码基线与逐项证据记录在[交付说明](../deliveries/chapter-22-global-payment-routing-platform.md)中。
+本章的工程增量不增加新的业务抽象：把四条旅程编排到 `test/system`，复用现有故障注入，增加标准库容量模型命令行工具，并让 Makefile 与 CI 输出版本化结果。[附录 C](../appendices/capacity-planning-and-launch-checklist.md)复用这份证据，不再创建第二套压测体系；状态与安全核查分别对照[附录 A](../appendices/payment-state-models.md)、[附录 B](../appendices/security-compliance.md)。这些工具仍有待实现。
 
 上线门禁应分别回答代码、契约与真实数据库是否通过，四条旅程是否满足不变量，吞吐与故障余量是否实测，真实服务商与安全运营是否获准。缺任一必要证据就是未通过；本章的算术函数、结构图和教学模拟器都不具有豁免权。
 

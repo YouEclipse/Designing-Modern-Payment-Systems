@@ -202,7 +202,7 @@ sequenceDiagram
 
 新事件和重复投递还需要区分。事件标识的持久去重防止重复生效；签名中的时间窗口用于限制捕获消息的恶意重放，两者不能相互替代。Stripe 的签名时间戳属于签名内容，而且每次重新投递会产生新时间戳；应依其契约检查投递时效，不把事件发生时间当成固定五分钟后永远丢弃的理由。[Stripe：回调重放防护](https://docs.stripe.com/webhooks#preventing-replay-attacks)
 
-当前网关模拟器协议是原始消息体的 HMAC-SHA256 加持久事件去重，没有真实 PSP 的时间戳与签名版本协议，不能据此声称已完成完整的防重放保护。它已经区分连接认证权限与命名空间冲突域：同一命名空间的另一连接不自动获得写权限，跨路径关联必须是显式授权的恢复别名。这个约束位于配套实现的 `docs/adr/0002-immutable-provider-connections.md`，固定修订版见[第 22 章交付说明](../deliveries/chapter-22-global-payment-routing-platform.md)。
+当前网关模拟器协议是原始消息体的 HMAC-SHA256 加持久事件去重，没有真实 PSP 的时间戳与签名版本协议，不能据此声称已完成完整的防重放保护。它已经区分连接认证权限与命名空间冲突域：同一命名空间的另一连接不自动获得写权限，跨路径关联必须是显式授权的恢复别名。这个约束见配套实现的[不可变服务商连接架构决策](https://github.com/YouEclipse/payments/blob/bc4afde24da708d22f67da72a90a1557b1477173/docs/adr/0002-immutable-provider-connections.md)。
 
 ## B.5 密钥轮换不能改变旧操作的执行含义
 
@@ -241,8 +241,8 @@ sequenceDiagram
 
 ## B.8 当前实现与上线剩余工作
 
-当前固定基线已经提供商户身份绑定、支付/路由/网关内部令牌校验、严格且有限体积的 JSON、模拟器环境限制、精确连接关联、HMAC 回调、持久收件箱与隔离区、不可变修订版注册表，以及禁止 `UPDATE`、`DELETE`、`TRUNCATE` 的服务商观察账本；这些边界的实现提交与 CI 见[第 22 章交付说明](../deliveries/chapter-22-global-payment-routing-platform.md)。路由服务的共享令牌中间件保护除 `/livez`、`/readyz` 和 `/metrics` 外的所有路径，检查 `X-Internal-Token`，等长值使用恒时比较，无令牌或错误令牌返回 401；开发环境允许本地默认值，非开发环境未显式配置则拒绝启动，入口位于 `services/router/cmd/server/main.go`。
+当前固定基线已经提供商户身份绑定、支付/路由/网关内部令牌校验、严格且有限体积的 JSON、模拟器环境限制、精确连接关联、HMAC 回调、持久收件箱与隔离区、不可变修订版注册表，以及禁止 `UPDATE`、`DELETE`、`TRUNCATE` 的服务商观察账本；这些边界对应[固定代码版本](https://github.com/YouEclipse/payments/commit/bc4afde24da708d22f67da72a90a1557b1477173)及其[持续集成记录](https://github.com/YouEclipse/payments/actions/runs/33041147119)。路由服务的共享令牌中间件保护除 `/livez`、`/readyz` 和 `/metrics` 外的所有路径，检查 `X-Internal-Token`，等长值使用恒时比较，无令牌或错误令牌返回 401；开发环境允许本地默认值，非开发环境未显式配置则拒绝启动，入口位于 `services/router/cmd/server/main.go`。
 
 但它仍是本地与测试支付核心。已有共享令牌鉴权不等于已具备 mTLS、每服务独立主体或细粒度资源授权；Compose 使用共享开发数据库账号；全链路日志脱敏、秘密管理器/KMS、独立生产数据库角色、真实 PSP 时间戳/重放防护与重叠轮换、数据保留与删除执行器、合规评估，均不能从现有通过的 CI 推导为已经完成。上面的 Go 允许列表是可运行的附录参考，也不等于已经挂到所有生产输出入口。书稿和实现仓库当前均为私有，证据链接需要获授权的 GitHub 身份；这是一项访问边界，不是修改仓库可见性的理由。
 
-这些缺口应进入[附录 C 的上线门禁](capacity-planning-and-launch-checklist.md)，由明确负责人提供部署证据。安全边界不是写到文档末尾的免责条款：只有错误身份、错误字段和错误配置真的被系统拒绝，正文中画出的边界才具有运行意义。当前实现、教学模型与目标合同的逐项状态见[附录 B 交付记录](../deliveries/appendix-b-security-compliance.md)。
+这些缺口应进入[附录 C 的上线门禁](capacity-planning-and-launch-checklist.md)，由明确负责人提供部署证据。安全边界不是写到文档末尾的免责条款：只有错误身份、错误字段和错误配置真的被系统拒绝，正文中画出的边界才具有运行意义。

@@ -2,7 +2,6 @@
 
 * [Designing Modern Payment Systems](README.md)
 * [配套 Go 微服务实现](https://github.com/YouEclipse/payments)
-* [交付证据索引](deliveries/README.md)
 
 ## 第一部分 支付基础
 
