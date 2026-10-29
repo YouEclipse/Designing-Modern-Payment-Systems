@@ -1,4 +1,4 @@
-# 设计现代支付系统
+# Designing Modern Payment Systems
 
 ## 从一笔支付到全球支付路由平台
 
@@ -8,7 +8,7 @@
 
 这不是一本支付术语百科，也不会先给出一张复杂架构图再逐项解释组件。主要章节采用下面的演进方式：
 
-```text
+```
 问题 → 简单设计 → 规模化问题 → 生产级设计 → 权衡
 ```
 
@@ -38,11 +38,11 @@ JSON、SQL、Mermaid 和少量伪代码仍会分别用于表达接口数据、�
 
 本书主要面向：
 
-- 具有 3～8 年经验的后端工程师；
-- 支付系统与金融科技工程师；
-- 系统架构师和基础设施工程师；
-- 希望进入支付领域的工程师；
-- 具有工程背景、希望理解系统约束的支付产品经理。
+* 具有 3～8 年经验的后端工程师；
+* 支付系统与金融科技工程师；
+* 系统架构师和基础设施工程师；
+* 希望进入支付领域的工程师；
+* 具有工程背景、希望理解系统约束的支付产品经理。
 
 默认读者已经了解 HTTP、REST API、数据库、Redis、消息队列、微服务，以及分布式系统中的基本一致性与可用性概念。书中会解释支付领域术语和资金语义，但不会从零讲解通用后端技术。
 
@@ -50,17 +50,17 @@ JSON、SQL、Mermaid 和少量伪代码仍会分别用于表达接口数据、�
 
 读完本书后，读者应该能够：
 
-- 解释顾客、商户、PSP、收单机构、卡组织与发卡行如何共同完成一笔支付；
-- 划分支付接口、支付编排器、支付路由系统与服务商适配器的职责边界；
-- 为一次支付构建路由上下文，并先通过准入筛选排除不可用路径；
-- 设计可版本化、可验证、可灰度和可回滚的路由规则引擎；
-- 在样本量、数据延迟和选择偏差存在时评估服务商成功率；
-- 综合成功率、成本、延迟、风险与健康状态做出可解释的路由决策；
-- 正确处理超时、未知状态、重试、后备路由与幂等，避免重复扣款；
-- 建立路由决策存储、核心指标、实验与审计能力；
-- 让内部支付状态通过回调通知、状态查询和对账与服务商状态收敛；
-- 设计支持多国家、多币种、多支付方式、多 PSP 和多区域的支付路由平台；
-- 判断规则、统计方法、上下文多臂老虎机或机器学习各自适用的边界，而不是为了智能化而引入模型。
+* 解释顾客、商户、PSP、收单机构、卡组织与发卡行如何共同完成一笔支付；
+* 划分支付接口、支付编排器、支付路由系统与服务商适配器的职责边界；
+* 为一次支付构建路由上下文，并先通过准入筛选排除不可用路径；
+* 设计可版本化、可验证、可灰度和可回滚的路由规则引擎；
+* 在样本量、数据延迟和选择偏差存在时评估服务商成功率；
+* 综合成功率、成本、延迟、风险与健康状态做出可解释的路由决策；
+* 正确处理超时、未知状态、重试、后备路由与幂等，避免重复扣款；
+* 建立路由决策存储、核心指标、实验与审计能力；
+* 让内部支付状态通过回调通知、状态查询和对账与服务商状态收敛；
+* 设计支持多国家、多币种、多支付方式、多 PSP 和多区域的支付路由平台；
+* 判断规则、统计方法、上下文多臂老虎机或机器学习各自适用的边界，而不是为了智能化而引入模型。
 
 ## 全书结构
 
@@ -92,10 +92,57 @@ JSON、SQL、Mermaid 和少量伪代码仍会分别用于表达接口数据、�
 
 ## 从哪里开始
 
-- 第一次接触支付系统：建议按[目录](SUMMARY.md)顺序阅读。
-- 已有支付接入经验：可以先阅读样章[《为什么需要支付路由》](part-1-foundations/why-payment-routing.md)，再进入路由引擎与可靠性两部分。
-- 正在设计多 PSP 平台：建议重点阅读系统边界、准入筛选、幂等、后备路由、决策审计和对账相关章节。
+* 第一次接触支付系统：建议按[目录](SUMMARY.md)顺序阅读。
+* 已有支付接入经验：可以先阅读样章[《为什么需要支付路由》](part-1-foundations/why-payment-routing.md)，再进入路由引擎与可靠性两部分。
+* 正在设计多 PSP 平台：建议重点阅读系统边界、准入筛选、幂等、后备路由、决策审计和对账相关章节。
 
 ## 项目维护
 
-本书的后续修订统一遵循[写作与实现工作流](WORKFLOW.md)，把章节正文、Go 微服务增量、支付语义审计、图表配图、真实数据库验证和双仓库发布作为同一个交付闭环。每章与附录的固定代码、持续集成、“主张→代码→测试”映射和能力边界可从[交付证据索引](deliveries/README.md)进入。
+本书的后续修订统一遵循[写作与实现工作流](WORKFLOW.md)，把章节正文、Go 微服务增量、支付语义审计、图表配图、真实数据库验证和双仓库发布作为同一个交付闭环。每章与附录的固定代码、持续集成、“主张→代码→测试”映射和能力边界可从[交付证据索引](deliveries/)进入。
+
+##
+
+### Working Subtitle
+
+Payment Routing, Reliability, Cost Optimization, and Risk Control at Scale
+
+### Book Positioning
+
+Designing Modern Payment Systems is a practical system design book about building modern payment infrastructure, with payment routing as the central system. The book explains how payment platforms route transactions across PSPs, acquirers, payment methods, regions, currencies, cost models, risk signals, and reliability constraints.
+
+### Target Readers
+
+The primary readers are backend engineers, payment engineers, fintech architects, infrastructure engineers, and technical product managers who want to understand how modern payment routing systems are designed.
+
+The reader is expected to understand basic backend systems, APIs, databases, queues, and distributed systems concepts. Prior payment experience is helpful but not required.
+
+### Core Promise
+
+After reading this book, the reader should be able to design a payment routing system that is reliable, observable, cost-aware, risk-aware, and scalable across multiple payment providers and markets.
+
+### Core System
+
+The central system in this book is the Payment Routing System. It receives a payment request and decides where and how the transaction should be processed.
+
+A routing decision may consider provider availability, payment method, card brand, issuer country, merchant configuration, transaction amount, currency, cost, historical success rate, risk signals, compliance constraints, latency, and fallback options.
+
+### Scope
+
+This book covers payment routing, PSP integration, payment lifecycle, rule-based routing, cost-aware routing, risk-based routing, retries, fallbacks, observability, reconciliation, settlement implications, experimentation, and global payment infrastructure.
+
+### Non-Goals
+
+This book is not a general introduction to consumer payments, a legal compliance manual, a PCI implementation checklist, or a complete accounting textbook. Topics such as PCI, ledger design, settlement, and reconciliation are covered only to the extent that they influence payment routing system design.
+
+### Writing Principles
+
+Each chapter should connect domain concepts with system design decisions.
+
+Each major concept should answer four questions:
+
+1. What problem does this solve?
+2. What can go wrong?
+3. What does a simple design look like?
+4. How does the design evolve at scale?
+
+The book should prefer concrete architecture, data models, state machines, failure modes, and operational trade-offs over abstract explanations.

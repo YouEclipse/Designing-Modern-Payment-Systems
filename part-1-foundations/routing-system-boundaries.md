@@ -52,16 +52,16 @@ Aurora 在同一家 PSP 下可能同时拥有美国与欧洲两个商户账户�
 
 本书把可执行路径称为**候选通道（Route Candidate）**。它至少由下面四个维度共同标识：
 
-| 维度 | 回答的问题 | 为什么不能在执行时临时决定 |
-| --- | --- | --- |
-| 支付服务商 | 使用哪类外部处理方，例如 `psp_a` | 只说明厂商品牌，不能定位合同与故障域 |
-| 商户账户 | 以支付服务商下哪个商户账户处理 | 能力、限额、费率、账单和幂等作用域可能不同 |
-| 连接器 | 使用哪套协议映射与 API 版本 | 字段、错误和状态语义可能不同 |
-| 区域 | 请求进入哪个服务商端点或数据区域 | 延迟、数据驻留、凭证与幂等可见范围可能不同 |
+| 维度    | 回答的问题                | 为什么不能在执行时临时决定         |
+| ----- | -------------------- | --------------------- |
+| 支付服务商 | 使用哪类外部处理方，例如 `psp_a` | 只说明厂商品牌，不能定位合同与故障域    |
+| 商户账户  | 以支付服务商下哪个商户账户处理      | 能力、限额、费率、账单和幂等作用域可能不同 |
+| 连接器   | 使用哪套协议映射与 API 版本     | 字段、错误和状态语义可能不同        |
+| 区域    | 请求进入哪个服务商端点或数据区域     | 延迟、数据驻留、凭证与幂等可见范围可能不同 |
 
 于是，一个候选通道不是“PSP A 的别名”，而是一条配置完成、可以被服务商网关精确执行的服务商连接快照。例如：
 
-```text
+```
 candidate_id = conn_pspa_aurora_eu_v1
 connection_revision = aurora_eu_credentials_v1
 provider_namespace_id = pspa_aurora_eu_account
@@ -83,13 +83,13 @@ region = eu
 
 因此，路由决策和服务商结果必须是两类对象：
 
-| 对象 | 核心问题 | 是否能代表资金事实 | 所有者 |
-| --- | --- | --- | --- |
-| 路由决策 | 下一次支付尝试允许走哪条连接，为什么 | 不能 | 路由服务计算；编排服务关联 |
-| 支付尝试 | 为完成同一笔支付发起的第几次受控执行 | 不能单独代表 | 编排服务 |
-| 服务商资金操作 | 在固定连接上的某个逻辑资金操作 | 只有结合结果证据才可以 | 编排服务 |
-| 服务商结果 | 支付服务商对资金操作的同步、查询或异步证据 | 是证据，但仍需单调收敛 | 服务商网关归一化，编排服务应用 |
-| 支付状态 | 商户可见的整体支付生命周期 | 是内部权威状态 | 编排服务 |
+| 对象      | 核心问题                  | 是否能代表资金事实   | 所有者             |
+| ------- | --------------------- | ----------- | --------------- |
+| 路由决策    | 下一次支付尝试允许走哪条连接，为什么    | 不能          | 路由服务计算；编排服务关联   |
+| 支付尝试    | 为完成同一笔支付发起的第几次受控执行    | 不能单独代表      | 编排服务            |
+| 服务商资金操作 | 在固定连接上的某个逻辑资金操作       | 只有结合结果证据才可以 | 编排服务            |
+| 服务商结果   | 支付服务商对资金操作的同步、查询或异步证据 | 是证据，但仍需单调收敛 | 服务商网关归一化，编排服务应用 |
+| 支付状态    | 商户可见的整体支付生命周期         | 是内部权威状态     | 编排服务            |
 
 ### 3.2.3 网络失败会迫使系统回答“谁负责恢复”
 
@@ -220,7 +220,7 @@ type Decision struct {
 
 对同一决策输入、同一策略版本和同一信号快照，结果应可复现。配置发布后，路由服务不能拿“当前最新配置”冒充过去使用过的版本。第 14 章会完整设计路由决策存储；本章只要求编排服务至少持久化 `routing_decision_id`、选中的 `provider_connection_id` 和必要版本引用，使真实执行不会因路由服务的缓存淘汰而失去身份。
 
-![圆黑框眼镜小人把路由服务吐出的连接票据送入独立的资金执行机器，备用资金管被锁住](../assets/routing-system-boundaries-illustrations/01-decision-is-not-execution.png)
+![圆黑框眼镜小人把路由服务吐出的连接票据送入独立的资金执行机器，备用资金管被锁住](../.gitbook/assets/01-decision-is-not-execution.png)
 
 ### 3.3.4 服务商网关：执行精确连接，隔离服务商差异
 
@@ -296,14 +296,14 @@ func PinRoute(decisionID string, selected SelectedCandidate, attemptID, operatio
 
 组件边界的价值之一，是让系统根据“副作用是否可能发生”决定恢复动作，而不是对所有错误统一重试：
 
-| 失败位置 | 已知事实 | 允许的下一步 | 明确禁止 |
-| --- | --- | --- | --- |
-| 路由请求本地校验失败 | 尚未选择路径，也未创建外部资金操作 | 修正请求或向商户返回错误 | 调用任意默认支付服务商 |
-| 路由服务返回无合格候选 | 有完整排除证据，没有资金副作用 | 保存失败原因，结束本次确认 | 绕过准入筛选选择最低成本 PSP |
-| 路由服务 RPC 超时 | 路由服务不执行资金操作 | 在总截止时间内重试相同决策请求，或安全失败 | 把超时当成服务商失败 |
-| 资金操作已持久化，网关调用前失败 | 有固定连接，但能证明未越过外部边界 | 用同一资金操作命令继续执行 | 创建另一次支付尝试 |
-| 网关派发后超时 | 服务商副作用可能已发生 | 标记 `UNKNOWN`，沿原连接查询、等待或复用原键重试 | 重新路由或生成新键 |
-| 回调通知与既有终态冲突 | 至少有两份不能自动兼容的证据 | 保留证据并进入 `review_required` | 按到达时间覆盖 |
+| 失败位置             | 已知事实              | 允许的下一步                        | 明确禁止             |
+| ---------------- | ----------------- | ----------------------------- | ---------------- |
+| 路由请求本地校验失败       | 尚未选择路径，也未创建外部资金操作 | 修正请求或向商户返回错误                  | 调用任意默认支付服务商      |
+| 路由服务返回无合格候选      | 有完整排除证据，没有资金副作用   | 保存失败原因，结束本次确认                 | 绕过准入筛选选择最低成本 PSP |
+| 路由服务 RPC 超时      | 路由服务不执行资金操作       | 在总截止时间内重试相同决策请求，或安全失败         | 把超时当成服务商失败       |
+| 资金操作已持久化，网关调用前失败 | 有固定连接，但能证明未越过外部边界 | 用同一资金操作命令继续执行                 | 创建另一次支付尝试        |
+| 网关派发后超时          | 服务商副作用可能已发生       | 标记 `UNKNOWN`，沿原连接查询、等待或复用原键重试 | 重新路由或生成新键        |
+| 回调通知与既有终态冲突      | 至少有两份不能自动兼容的证据    | 保留证据并进入 `review_required`     | 按到达时间覆盖          |
 
 这个表也解释了为什么路由服务的“纯”很重要：路由服务 RPC 失败不会制造资金不确定性，所以它可以拥有比支付服务商调用简单得多的重试语义。反过来，从资金操作持久化并准备派发开始，恢复就必须读取权威状态，而不能重新执行一遍完整的确认流程。
 
@@ -319,8 +319,8 @@ func PinRoute(decisionID string, selected SelectedCandidate, attemptID, operatio
 
 用一个可证伪的场景检验边界。Aurora 同时配置两条 PSP A 连接：
 
-| 候选通道 | 支付服务商 | 商户账户 | 连接器 | 区域 |
-| --- | --- | --- | --- | --- |
+| 候选通道                     | 支付服务商   | 商户账户        | 连接器           | 区域   |
+| ------------------------ | ------- | ----------- | ------------- | ---- |
 | `conn_pspa_aurora_eu_v1` | `psp_a` | `aurora_eu` | `checkout_v2` | `eu` |
 | `conn_pspa_aurora_us_v1` | `psp_a` | `aurora_us` | `checkout_v2` | `us` |
 
@@ -362,7 +362,7 @@ sequenceDiagram
 
 因此，后续操作的目标不是一个新的“最佳候选通道”，而是原交易所在连接：
 
-```text
+```
 Capture target = original provider_connection_id + provider_payment_reference
 Void target    = original provider_connection_id + provider_payment_reference
 Refund target  = original provider_connection_id + provider_payment_reference
@@ -425,10 +425,10 @@ flowchart LR
 
 独立服务能提供独立扩缩容、故障隔离、凭证边界和不同发布节奏，但也会引入 RPC 超时、部署、认证、追踪与跨库一致性成本。下面两种部署都可以遵守本章不变量：
 
-| 形态 | 适用阶段 | 必须保持的边界 |
-| --- | --- | --- |
-| 模块化单体 | 支付服务商少、团队小、吞吐有限 | 类型上分开决策与结果；只有编排服务改变支付；服务商网关不选路 |
-| 独立路由 / 支付 / 服务商网关服务 | 策略发布频繁、凭证隔离或扩缩容要求明显 | RPC 契约携带完整身份；每个服务有明确权威存储与故障语义 |
+| 形态                  | 适用阶段                | 必须保持的边界                        |
+| ------------------- | ------------------- | ------------------------------ |
+| 模块化单体               | 支付服务商少、团队小、吞吐有限     | 类型上分开决策与结果；只有编排服务改变支付；服务商网关不选路 |
+| 独立路由 / 支付 / 服务商网关服务 | 策略发布频繁、凭证隔离或扩缩容要求明显 | RPC 契约携带完整身份；每个服务有明确权威存储与故障语义  |
 
 不应该仅因为流程图里有四个框，就为每个框创建数据库和 Kubernetes 部署。拆分的依据应是数据所有权、合规边界、故障域和独立演进需求。反过来，即使所有模块运行在同一进程，也不能让一个便利函数绕过资金操作持久化后直接调用支付服务商。
 
@@ -438,9 +438,9 @@ flowchart LR
 
 本章对应[已验证实现 `bc4afde`](https://github.com/YouEclipse/payments/tree/bc4afde24da708d22f67da72a90a1557b1477173)，以三个服务呈现这些契约：
 
-- [路由服务](https://github.com/YouEclipse/payments/tree/bc4afde24da708d22f67da72a90a1557b1477173/services/router/internal/routing)生成确定性决策，输出 `selected_candidate`、候选顺序、排除证据和策略版本；候选通道携带连接 ID、修订、命名空间和服务商 / 账户 / 连接器 / 区域元数据。
-- [支付服务](https://github.com/YouEclipse/payments/blob/bc4afde24da708d22f67da72a90a1557b1477173/services/payment/internal/app/service.go)请求决策，并在产生外部调用前把 `routing_decision_id` 和完整连接身份固定到支付尝试 / 资金操作；它拥有支付状态与 `UNKNOWN` 恢复。
-- [服务商网关](https://github.com/YouEclipse/payments/tree/bc4afde24da708d22f67da72a90a1557b1477173/services/provider-gateway/internal/gateway)持久化资金操作、请求摘要与只增不改的连接修订登记，拒绝把已有修订绑定到另一配置；查询与同操作重发沿用原身份。恢复别名必须显式配置，不能创建新的资金操作，也不能仅因命名空间相同就替另一连接认证回调通知。
+* [路由服务](https://github.com/YouEclipse/payments/tree/bc4afde24da708d22f67da72a90a1557b1477173/services/router/internal/routing)生成确定性决策，输出 `selected_candidate`、候选顺序、排除证据和策略版本；候选通道携带连接 ID、修订、命名空间和服务商 / 账户 / 连接器 / 区域元数据。
+* [支付服务](https://github.com/YouEclipse/payments/blob/bc4afde24da708d22f67da72a90a1557b1477173/services/payment/internal/app/service.go)请求决策，并在产生外部调用前把 `routing_decision_id` 和完整连接身份固定到支付尝试 / 资金操作；它拥有支付状态与 `UNKNOWN` 恢复。
+* [服务商网关](https://github.com/YouEclipse/payments/tree/bc4afde24da708d22f67da72a90a1557b1477173/services/provider-gateway/internal/gateway)持久化资金操作、请求摘要与只增不改的连接修订登记，拒绝把已有修订绑定到另一配置；查询与同操作重发沿用原身份。恢复别名必须显式配置，不能创建新的资金操作，也不能仅因命名空间相同就替另一连接认证回调通知。
 
 [该提交的持续集成（CI）](https://github.com/YouEclipse/payments/actions/runs/33041147119)已验证真实 PostgreSQL 迁移、连接身份冲突、乱序证据、竞态检测与 Compose 端到端测试；其中 `UNKNOWN` 用例同时检查支付服务/服务商网关的连接 ID、修订、命名空间一致及只有一个资金路径。完整证据映射见[第 3 章交付记录](../deliveries/chapter-03-routing-system-boundaries.md)。
 
@@ -462,12 +462,12 @@ flowchart LR
 
 ## 延伸阅读
 
-- [Adyen 文档：API 幂等](https://docs.adyen.com/development-resources/api-idempotency)
-- [Adyen 文档：请款](https://docs.adyen.com/online-payments/capture)
-- [Stripe API 参考：幂等请求](https://docs.stripe.com/api/idempotent_requests)
-- [PCI SSC 术语表：持卡人数据与敏感认证数据](https://www.pcisecuritystandards.org/glossary/)
-- [PCI SSC FAQ 1326：EMVCo 支付令牌与 PCI DSS](https://www.pcisecuritystandards.org/faqs/1326/)
-- [第 2 章：为什么需要支付路由](why-payment-routing.md)
-- [第 4 章：构建路由上下文](../part-2-routing-engine/routing-context.md)
-- [第 10 章：超时、重试与未知状态](../part-3-reliability/timeout-and-retry.md)
-- [第 14 章：路由决策存储](../part-4-operating-at-scale/routing-decision-store.md)
+* [Adyen 文档：API 幂等](https://docs.adyen.com/development-resources/api-idempotency)
+* [Adyen 文档：请款](https://docs.adyen.com/online-payments/capture)
+* [Stripe API 参考：幂等请求](https://docs.stripe.com/api/idempotent_requests)
+* [PCI SSC 术语表：持卡人数据与敏感认证数据](https://www.pcisecuritystandards.org/glossary/)
+* [PCI SSC FAQ 1326：EMVCo 支付令牌与 PCI DSS](https://www.pcisecuritystandards.org/faqs/1326/)
+* [第 2 章：为什么需要支付路由](why-payment-routing.md)
+* [第 4 章：构建路由上下文](../part-2-routing-engine/routing-context.md)
+* [第 10 章：超时、重试与未知状态](../part-3-reliability/timeout-and-retry.md)
+* [第 14 章：路由决策存储](../part-4-operating-at-scale/routing-decision-store.md)

@@ -16,7 +16,7 @@ Aurora 接入第二个市场时，并没有立刻增加一家新的 PSP。它先
 
 准入筛选更接近一个合取命题，而不是一个可补偿的分数：
 
-```text
+```
 eligible(candidate, context, snapshot) =
     snapshot_known_and_fresh
     AND account_enabled
@@ -103,15 +103,15 @@ func eligibilityReasons(req Request, candidate Candidate) []Reason {
 
 v1 还把 `not_in_policy` 作为一个排除原因追加在同一循环中。行为是确定的，但概念上它属于策略约束，不属于服务商能力。拆出能力目录后，流水线先形成技术上的合格候选集，再交给第 5 章的规则/策略；二者可以共同出现在最终证据里，却不能共用事实所有权。
 
-| v1 基线已证明 | 不能仅从 v1 代码推断 |
-| --- | --- |
-| 精确候选通道已启用 | 服务商账户在远端仍处于可收款状态 |
-| 支持请求的三字母币种 | 交易国家、商户实体或发卡国家满足约束 |
-| 支持非敏感类别 `card` | 本地支付方式、卡品牌、3DS/SCA 模式 |
-| 支持 `sale` 或 `authorize` | 请款方式、撤销、退款等完整操作能力 |
-| 静态策略中包含候选通道 | 金额上下限、合同与商户允许列表 |
-| 启动时得到一份不可变配置 | 能力的来源、观测时间、有效期与目录版本 |
-| 不合格时返回稳定原因 | 令牌是否能被另一账户或另一支付服务商使用 |
+| v1 基线已证明                | 不能仅从 v1 代码推断          |
+| ----------------------- | --------------------- |
+| 精确候选通道已启用               | 服务商账户在远端仍处于可收款状态      |
+| 支持请求的三字母币种              | 交易国家、商户实体或发卡国家满足约束    |
+| 支持非敏感类别 `card`          | 本地支付方式、卡品牌、3DS/SCA 模式 |
+| 支持 `sale` 或 `authorize` | 请款方式、撤销、退款等完整操作能力     |
+| 静态策略中包含候选通道             | 金额上下限、合同与商户允许列表       |
+| 启动时得到一份不可变配置            | 能力的来源、观测时间、有效期与目录版本   |
+| 不合格时返回稳定原因              | 令牌是否能被另一账户或另一支付服务商使用  |
 
 OpenAPI 中保留的 v1 端点反映这条窄边界：请求只有第 4 章列出的七个非敏感字段，`payment_method` 仅允许 `card`，`operation` 仅允许 `sale` / `authorize`。新增 v2 端点使用上下文封装和扩展决策证据；旧接口没有被静默改变。路由服务接受 `authorize` 是路由契约的预留，不代表端到端系统已经支持手动请款；资金闭环仍是令牌化银行卡的自动请款 `SALE`。
 
@@ -123,35 +123,35 @@ PSP 文档通常描述产品的可能能力，但生产系统真正调用的是�
 
 考虑下面三条同品牌连接：
 
-| 能力维度 | `conn_pspa_us_primary` | `conn_pspa_eu_main` | `conn_pspa_eu_moto` |
-| --- | --- | --- | --- |
-| PSP / 连接器 | PSP A / `pspa_v3` | PSP A / `pspa_v3` | PSP A / `pspa_v3` |
-| 商户账户 / 区域 | Aurora 美国 / `us-east` | Aurora 欧洲 / `eu-west` | Aurora 欧洲 MOTO / `eu-west` |
-| 币种 | USD | EUR、GBP | EUR |
-| 支付方式 | card | card、iDEAL | card |
-| 操作 | `sale` | `sale`、`authorize` | `sale` |
-| 请款方式 | 自动 | 自动、手动 | 自动 |
-| 令牌域 | `pspa:acct_us` | `pspa:acct_eu`、网络令牌 | `pspa:acct_eu_moto` |
-| 账户状态 | 已启用 | 已启用 | 紧急禁用 |
+| 能力维度      | `conn_pspa_us_primary` | `conn_pspa_eu_main`   | `conn_pspa_eu_moto`        |
+| --------- | ---------------------- | --------------------- | -------------------------- |
+| PSP / 连接器 | PSP A / `pspa_v3`      | PSP A / `pspa_v3`     | PSP A / `pspa_v3`          |
+| 商户账户 / 区域 | Aurora 美国 / `us-east`  | Aurora 欧洲 / `eu-west` | Aurora 欧洲 MOTO / `eu-west` |
+| 币种        | USD                    | EUR、GBP               | EUR                        |
+| 支付方式      | card                   | card、iDEAL            | card                       |
+| 操作        | `sale`                 | `sale`、`authorize`    | `sale`                     |
+| 请款方式      | 自动                     | 自动、手动                 | 自动                         |
+| 令牌域       | `pspa:acct_us`         | `pspa:acct_eu`、网络令牌   | `pspa:acct_eu_moto`        |
+| 账户状态      | 已启用                    | 已启用                   | 紧急禁用                       |
 
 如果能力目录只保存 `provider=pspa, supports_card=true`，表中所有关键差异都会消失。第 3 章已经解决“选中的到底是哪条连接”；本章要求能力的主键必须使用同一个 `candidate_id`，否则选择与执行仍会在最后一公里脱节。
 
-![圆黑框眼镜小人拿着不同钥匙逐一验证挂着同一 PSP 标志、但账户和区域各异的三扇门](../assets/provider-eligibility-illustrations/01-same-brand-different-doors.png)
+![圆黑框眼镜小人拿着不同钥匙逐一验证挂着同一 PSP 标志、但账户和区域各异的三扇门](../.gitbook/assets/01-same-brand-different-doors.png)
 
 ### 6.3.2 “支持支付”其实是多维谓词
 
 不同约束需要不同的证据和缺失策略，不能压成一个 `supported=true`：
 
-| 维度 | 要回答的问题 | 典型证据 | 缺失时 |
-| --- | --- | --- | --- |
-| 币种 | 该账户能否用当前币种创建此操作 | 账户配置、合同、服务商 API | 按关闭原则拒绝 |
-| 国家 | 哪一种国家限制适用：交易、商户实体、顾客或发卡地 | 规范上下文 + 明确字段定义 | 不猜另一个国家 |
-| 支付方式 | 精确方式及其变体是否已启用 | 账户级支付方式配置 | 按关闭原则拒绝 |
-| 操作 / 请款 | `sale`、`authorize` 与请款方式是否匹配 | 连接器与账户能力 | 按关闭原则拒绝 |
-| 金额 | 最小货币单位金额是否落在上下限内 | 服务商/方法限制、商户合同 | 按关闭原则拒绝 |
-| 账户启用 | 账户、凭证与业务线是否允许接收新交易 | 服务商账户状态、内部审批 | 按关闭原则拒绝 |
-| 令牌可移植性 | 当前非敏感令牌域是否能被该连接消费 | 凭证库绑定、令牌组/网络令牌事实 | 不做“同 PSP 即可用”推断 |
-| 商户 / 合规 | 商户、MCC、实体、区域或认证要求是否满足 | 合同与合规配置 | 按关闭原则拒绝 |
+| 维度      | 要回答的问题                       | 典型证据             | 缺失时             |
+| ------- | ---------------------------- | ---------------- | --------------- |
+| 币种      | 该账户能否用当前币种创建此操作              | 账户配置、合同、服务商 API  | 按关闭原则拒绝         |
+| 国家      | 哪一种国家限制适用：交易、商户实体、顾客或发卡地     | 规范上下文 + 明确字段定义   | 不猜另一个国家         |
+| 支付方式    | 精确方式及其变体是否已启用                | 账户级支付方式配置        | 按关闭原则拒绝         |
+| 操作 / 请款 | `sale`、`authorize` 与请款方式是否匹配 | 连接器与账户能力         | 按关闭原则拒绝         |
+| 金额      | 最小货币单位金额是否落在上下限内             | 服务商/方法限制、商户合同    | 按关闭原则拒绝         |
+| 账户启用    | 账户、凭证与业务线是否允许接收新交易           | 服务商账户状态、内部审批     | 按关闭原则拒绝         |
+| 令牌可移植性  | 当前非敏感令牌域是否能被该连接消费            | 凭证库绑定、令牌组/网络令牌事实 | 不做“同 PSP 即可用”推断 |
+| 商户 / 合规 | 商户、MCC、实体、区域或认证要求是否满足        | 合同与合规配置          | 按关闭原则拒绝         |
 
 国家尤其容易被滥用。`transaction_country`、`merchant_country`、`customer_country` 与 `issuer_country` 不是同义词；能力约束必须引用第 4 章字段注册表中的确切字段及来源。用账单地址补发卡国家，或用请求 IP 补商户实体，会把数据缺失伪装成已知事实。
 
@@ -241,11 +241,11 @@ type Catalog struct {
 
 准入筛选自身保留三值结果，进入后续集合则是严格二值边界：
 
-| 准入状态 | 证明条件 | 是否进入合格候选集 |
-| --- | --- | ---: |
-| `eligible` | 所有必需约束都有新鲜证据且结果为是 | 是 |
-| `ineligible` | 至少一项约束被已知事实证明为否 | 否 |
-| `unknown` | 没有已知否，但至少一项缺失、冲突或过期 | 否，按关闭原则拒绝 |
+| 准入状态         | 证明条件                | 是否进入合格候选集 |
+| ------------ | ------------------- | --------: |
+| `eligible`   | 所有必需约束都有新鲜证据且结果为是   |         是 |
+| `ineligible` | 至少一项约束被已知事实证明为否     |         否 |
+| `unknown`    | 没有已知否，但至少一项缺失、冲突或过期 | 否，按关闭原则拒绝 |
 
 如果同一候选通道同时有已知否与未知，顶层状态可归为 `ineligible`，但所有原因都应保留。这样聚合指标不会把明确不支持与数据质量故障混为一谈，也不会因为已有一个假值就掩盖能力目录正在过期。
 
@@ -365,20 +365,20 @@ func ApplyPreference(eligible, preference []string) []string {
 
 建议在保留当前原因码的基础上扩展，而不是无故改名：
 
-| 原因码 | 语义 | 能否由规则/评分覆盖 |
-| --- | --- | ---: |
-| `provider_disabled` | 当前配置明确禁止该连接接收新流量 | 否 |
-| `currency_not_supported` | 已知币种不在支持集合 | 否 |
-| `payment_method_not_supported` | 已知方式或变体不受支持 | 否 |
-| `operation_not_supported` | 当前操作或请款方式不受支持 | 否 |
-| `country_not_supported` | 被明确命名的国家约束不满足 | 否 |
-| `amount_out_of_range` | 最小货币单位金额超出有效范围 | 否 |
-| `token_not_portable` | 已知令牌域与连接不兼容 | 否 |
-| `merchant_constraint_unmet` | 商户/合同约束不满足 | 否 |
-| `compliance_constraint_unmet` | 当前要求缺失或明确不允许 | 否 |
-| `capability_snapshot_missing` | 没有该候选通道的描述符 | 否 |
-| `capability_snapshot_stale` | 快照超出有效区间 | 否 |
-| `capability_unknown` | 必需维度没有足够证据 | 否 |
+| 原因码                            | 语义               | 能否由规则/评分覆盖 |
+| ------------------------------ | ---------------- | ---------: |
+| `provider_disabled`            | 当前配置明确禁止该连接接收新流量 |          否 |
+| `currency_not_supported`       | 已知币种不在支持集合       |          否 |
+| `payment_method_not_supported` | 已知方式或变体不受支持      |          否 |
+| `operation_not_supported`      | 当前操作或请款方式不受支持    |          否 |
+| `country_not_supported`        | 被明确命名的国家约束不满足    |          否 |
+| `amount_out_of_range`          | 最小货币单位金额超出有效范围   |          否 |
+| `token_not_portable`           | 已知令牌域与连接不兼容      |          否 |
+| `merchant_constraint_unmet`    | 商户/合同约束不满足       |          否 |
+| `compliance_constraint_unmet`  | 当前要求缺失或明确不允许     |          否 |
+| `capability_snapshot_missing`  | 没有该候选通道的描述符      |          否 |
+| `capability_snapshot_stale`    | 快照超出有效区间         |          否 |
+| `capability_unknown`           | 必需维度没有足够证据       |          否 |
 
 `not_in_policy` 仍可保留在最终决策证据中，但它应在准入筛选之后产生。这样运营看到 `currency_not_supported + not_in_policy` 时，能区分“技术上不可能”和“业务策略未允许”，也能分别找到事实所有者。
 
@@ -415,13 +415,13 @@ sequenceDiagram
 4. 决策必须记录目录版本与摘要。v2 已使用 `capability_catalog_version` / `capability_catalog_digest`，不把 v1 的 `policy_version` 冒充能力版本；
 5. 对不同事实使用不同 TTL 是合理的，但一次决策仍要引用一个可重建的逻辑快照，不能只记录“最新”。
 
-| 来源 | 能权威证明什么 | 不能据此证明什么 |
-| --- | --- | --- |
-| 审批后的内部配置/合同 | 商户允许列表、实体、合同金额或地域边界 | 服务商账户此刻仍活跃 |
-| 服务商账户 API / 回调通知 | 账户状态、已启用支付方式、远端配置 | 内部合同允许将该商户发往此连接 |
-| 连接器清单 | 某版本能映射哪些操作、字段与错误 | 某个商户账户已启用这些能力 |
-| 受控探测 | 凭证可认证、端点可达、无副作用查询可用 | 真实卡、金额或支付方式一定被接受 |
-| 历史交易指标 | 某段时间内的结果与延迟 | 静态合同/合规资格；其评分用途留给第 8、13 章 |
+| 来源               | 能权威证明什么             | 不能据此证明什么                  |
+| ---------------- | ------------------- | ------------------------- |
+| 审批后的内部配置/合同      | 商户允许列表、实体、合同金额或地域边界 | 服务商账户此刻仍活跃                |
+| 服务商账户 API / 回调通知 | 账户状态、已启用支付方式、远端配置   | 内部合同允许将该商户发往此连接           |
+| 连接器清单            | 某版本能映射哪些操作、字段与错误    | 某个商户账户已启用这些能力             |
+| 受控探测             | 凭证可认证、端点可达、无副作用查询可用 | 真实卡、金额或支付方式一定被接受          |
+| 历史交易指标           | 某段时间内的结果与延迟         | 静态合同/合规资格；其评分用途留给第 8、13 章 |
 
 合并不是简单的来源优先级。每个来源只对自己拥有的维度发言，最终准入结果取这些硬约束的交集。若两个权威来源对同一维度冲突，结果应为未知/禁用并告警，不能按到达时间挑一个“胜者”。
 
@@ -502,18 +502,18 @@ func TestFilter_SameProviderConnectionsCannotBypassEligibility(t *testing.T) {
 
 至少还需要以下失败矩阵：
 
-| 失败注入 | 预期结果 | 证明的不变量 |
-| --- | --- | --- |
-| 描述符缺失 | `capability_snapshot_missing`，无服务商网关调用 | 缺失不等于通配 |
-| 目录已过 `expires_at` | 所有依赖事实未知，返回无候选证据 | 过期不升级为支持 |
-| 两个同服务商候选，仅一个支持 USD 自动请款 | 只保留精确匹配连接 | 品牌不能覆盖连接事实 |
-| 规则 `force` / `prefer` 指向不合格连接 | 空集或保留其他合格项 | 策略不能制造能力 |
-| 令牌域属于另一账户 | `token_not_portable` | 同 PSP 令牌不自动可用 |
-| 币种已知支持，但国家缺失 | `capability_unknown` | 一个维度不能替另一个维度作证 |
-| 紧急拒绝在目录安装后出现 | 新决策排除；旧资金操作仍查询原连接 | 禁用只影响新选路 |
-| 新目录只有半数描述符 | 整版拒绝安装，继续未过期旧版 | 快照原子性 |
-| 所有候选通道被排除 | `422` + 稳定排除项，服务商网关调用为零 | 无隐藏默认支付服务商 |
-| 打乱描述符与候选输入顺序 | 决策、原因顺序与摘要不变 | 确定性不依赖映射/文件顺序 |
+| 失败注入                          | 预期结果                                   | 证明的不变量         |
+| ----------------------------- | -------------------------------------- | -------------- |
+| 描述符缺失                         | `capability_snapshot_missing`，无服务商网关调用 | 缺失不等于通配        |
+| 目录已过 `expires_at`             | 所有依赖事实未知，返回无候选证据                       | 过期不升级为支持       |
+| 两个同服务商候选，仅一个支持 USD 自动请款       | 只保留精确匹配连接                              | 品牌不能覆盖连接事实     |
+| 规则 `force` / `prefer` 指向不合格连接 | 空集或保留其他合格项                             | 策略不能制造能力       |
+| 令牌域属于另一账户                     | `token_not_portable`                   | 同 PSP 令牌不自动可用  |
+| 币种已知支持，但国家缺失                  | `capability_unknown`                   | 一个维度不能替另一个维度作证 |
+| 紧急拒绝在目录安装后出现                  | 新决策排除；旧资金操作仍查询原连接                      | 禁用只影响新选路       |
+| 新目录只有半数描述符                    | 整版拒绝安装，继续未过期旧版                         | 快照原子性          |
+| 所有候选通道被排除                     | `422` + 稳定排除项，服务商网关调用为零                | 无隐藏默认支付服务商     |
+| 打乱描述符与候选输入顺序                  | 决策、原因顺序与摘要不变                           | 确定性不依赖映射/文件顺序  |
 
 “服务商网关调用为零”应由跨服务测试直接断言，而不是只看路由服务返回值。否则编排服务可能在 `422` 后仍执行旧的默认路径，单元测试全部通过，资金边界却已经被绕过。
 
@@ -579,14 +579,14 @@ func TestFilter_SameProviderConnectionsCannotBypassEligibility(t *testing.T) {
 
 ## 延伸阅读
 
-- [Stripe Connect：账户能力与配置](https://docs.stripe.com/connect/account-capabilities)
-- [Stripe Connect：跨多个账户共享支付方式](https://docs.stripe.com/connect/direct-charges-multiple-accounts)
-- [Stripe：支付方式支持情况](https://docs.stripe.com/payments/payment-methods/payment-method-support)
-- [Adyen：通过 API 管理支付方式](https://docs.adyen.com/platforms/payment-methods/api)
-- [Adyen：令牌化](https://docs.adyen.com/online-payments/tokenization/)
-- [第 3 章：支付路由系统边界](../part-1-foundations/routing-system-boundaries.md)
-- [第 4 章：构建路由上下文](routing-context.md)
-- [第 5 章：基于规则的路由](rule-based-routing.md)
-- [第 7 章：成本感知路由](cost-aware-routing.md)
-- [第 13 章：服务商健康与断路器](../part-3-reliability/provider-health.md)
-- [第 20 章：路由配置平台](../part-5-global-routing/configuration-platform.md)
+* [Stripe Connect：账户能力与配置](https://docs.stripe.com/connect/account-capabilities)
+* [Stripe Connect：跨多个账户共享支付方式](https://docs.stripe.com/connect/direct-charges-multiple-accounts)
+* [Stripe：支付方式支持情况](https://docs.stripe.com/payments/payment-methods/payment-method-support)
+* [Adyen：通过 API 管理支付方式](https://docs.adyen.com/platforms/payment-methods/api)
+* [Adyen：令牌化](https://docs.adyen.com/online-payments/tokenization/)
+* [第 3 章：支付路由系统边界](../part-1-foundations/routing-system-boundaries.md)
+* [第 4 章：构建路由上下文](routing-context.md)
+* [第 5 章：基于规则的路由](rule-based-routing.md)
+* [第 7 章：成本感知路由](cost-aware-routing.md)
+* [第 13 章：服务商健康与断路器](../part-3-reliability/provider-health.md)
+* [第 20 章：路由配置平台](../part-5-global-routing/configuration-platform.md)
