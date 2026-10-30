@@ -1,6 +1,7 @@
 // Run from the book root: go run scripts/verify-go-examples.go [chapter.md ...]
 // Each source block is extracted afresh; checked-in test overlays never replace
 // the book's code. An unregistered or newly added block fails the verification.
+// English counterparts reuse the same block mapping and test overlays.
 package main
 
 import (
@@ -60,6 +61,20 @@ func verify(requested []string) error {
 	}
 	if config.GoVersion == "" {
 		return fmt.Errorf("manifest needs a Go version")
+	}
+	// Keep one canonical mapping while extracting and testing each translation's
+	// actual code. The bilingual content check separately requires every page.
+	originalGroups := append([]group(nil), config.Groups...)
+	for _, current := range originalGroups {
+		translatedSource := filepath.ToSlash(filepath.Join("en", current.Source))
+		if _, err := os.Stat(translatedSource); os.IsNotExist(err) {
+			continue
+		} else if err != nil {
+			return err
+		}
+		current.Name = "en_" + current.Name
+		current.Source = translatedSource
+		config.Groups = append(config.Groups, current)
 	}
 	wanted := make(map[string]bool)
 	for _, path := range requested {

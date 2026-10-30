@@ -11,3 +11,5 @@ go run scripts/verify-go-examples.go part-1-foundations/payment-lifecycle.md par
 临时 module 和测试子进程的 `TMPDIR` / `GOTMPDIR` 位于书仓 `.validation-tmp/`，因此本书产物保持在 `~/workspace` 的工作树内；该目录不入 Git。脚本只清理自己创建的 module，不删除目录中其他任务的文件。
 
 不带章节参数时验证所有已登记章节；这不等于尚未登记的章节也已验证。每章发布前必须覆盖其全部 Go 块，依赖版本在 manifest 固定。真实服务、SQL 迁移和 Compose E2E 仍由配套代码仓验证，不能用此脚本代替。
+
+对应的 `en/<chapter.md>` 存在时，脚本自动复用中文章节的 manifest 映射和测试，从英文正文实际提取代码，并放入独立的 `en_` 包验证。不带参数时检查中英文两个版本，也可传入 `en/part-1-foundations/payment-lifecycle.md` 等路径只检查英文章节。无需维护一份容易漂移的英文 manifest。全文覆盖与代码语义一致性另由 `python3 scripts/verify-translations.py` 检查。

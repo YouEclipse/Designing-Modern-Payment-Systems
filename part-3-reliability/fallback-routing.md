@@ -1,5 +1,7 @@
 # 第 12 章 后备路由
 
+**中文** | [English](../en/part-3-reliability/fallback-routing.md)
+
 Aurora 的路由服务为一笔 129.00 USD 的令牌化银行卡自动请款支付返回了有序路由计划：`cand_us_a`、`cand_us_b`。支付编排器用第一个候选通道创建尝试 1 和 `SALE` 操作。几百毫秒后，网关返回“服务商暂时不可用”。系统是否应该立刻调用 `cand_us_b`？
 
 只看“暂时不可用”无法回答。若适配器能证明请求在越过服务商边界前就被拒绝，旧操作的 `side_effect_certainty` 是 `none`；若请求可能已经到达服务商，只是响应丢失，同一句错误意味着 `possible` 和 `UNKNOWN`。即使确实是 `none`，发卡机构拒绝、风险阻断、需要 3DS 的 `action` 也不应被自动换路绕过。因此本章的核心命题是：

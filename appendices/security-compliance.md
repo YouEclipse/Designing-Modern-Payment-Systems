@@ -1,5 +1,7 @@
 # 附录 B 安全、合规与数据边界
 
+**中文** | [English](../en/appendices/security-compliance.md)
+
 一次线上排查很容易从“为什么这笔支付没走通”变成“把整个请求打出来看看”。请求被复制进日志，日志进入检索平台，错误工单又把它贴进聊天群。原本只应该在凭证边界短暂出现的数据，就这样获得了比支付业务更广的访问者和更长的寿命。增加 TLS 或把服务拆成微服务，并不会撤销这些副本。
 
 本附录的核心命题是：安全首先是限制数据和权限的传播，其次才是保护已经允许存在的数据。它把[第 3 章的服务边界](../part-1-foundations/routing-system-boundaries.md)、[第 4 章的上下文](../part-2-routing-engine/routing-context.md)、[第 14 章的决策记录](../part-4-operating-at-scale/routing-decision-store.md)和[第 20 章的配置治理](../part-5-global-routing/configuration-platform.md)串成横向检查方法，不另建一套反欺诈引擎，也不代替目标市场的安全评估、合同审核和法律意见。

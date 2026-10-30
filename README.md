@@ -1,4 +1,6 @@
-# Designing Modern Payment Systems
+# 设计现代支付系统 / Designing Modern Payment Systems
+
+**中文** | [English](en/README.md)
 
 ## 从一笔支付到全球支付路由平台
 
@@ -14,11 +16,11 @@
 
 读者会先看到一个足够简单的系统如何工作，再观察它在哪些真实条件下失效，最后理解新组件为什么出现、解决了什么问题，又带来了哪些代价。
 
-> 中文版第一版包含 22 章、3 篇附录与术语表。阅读时请区分配套系统已经实现的能力、用于解释设计的 Go 教学模型，以及有待实现的目标方案；各章会说明适用范围与限制。英文版将在此基础上整体翻译并重写。
+> 中文版第一版包含 22 章、3 篇附录与术语表。阅读时请区分配套系统已经实现的能力、用于解释设计的 Go 教学模型，以及有待实现的目标方案；各章会说明适用范围与限制。中英文版按相同章节组织，可通过每页顶部的语言链接切换。
 
 ## 语言约定
 
-正文以自然中文为主。支付概念优先使用“支付意图、支付尝试、资金操作、候选通道、准入筛选、路由决策、后备路由”等中文名称；仅在首次定义、术语表或需要对应外部规范时附英文。Go、PostgreSQL、HTTP、JSON、PSP、PCI DSS、3DS、品牌名、代码标识、接口字段和状态枚举保持原样，避免翻译损害工程精度。
+中文版正文使用自然中文。支付概念优先使用“支付意图、支付尝试、资金操作、候选通道、准入筛选、路由决策、后备路由”等中文名称；仅在首次定义、术语表或需要对应外部规范时附英文。Go、PostgreSQL、HTTP、JSON、PSP、PCI DSS、3DS、品牌名、代码标识、接口字段和状态枚举保持原样，避免翻译损害工程精度。英文版使用相同的章节结构与支付语义；原始手绘插图保留中文标注，并配英文说明，技术图表则译为英文。
 
 ## 代码示例约定
 
@@ -96,49 +98,49 @@ JSON、SQL、Mermaid 和少量伪代码仍会分别用于表达接口数据、�
 * 已有支付接入经验：可以先阅读样章[《为什么需要支付路由》](part-1-foundations/why-payment-routing.md)，再进入路由引擎与可靠性两部分。
 * 正在设计多 PSP 平台：建议重点阅读系统边界、准入筛选、幂等、后备路由、决策审计和对账相关章节。
 
-##
+## 范围与写作原则
 
-### Working Subtitle
+### 暂定副标题
 
-Payment Routing, Reliability, Cost Optimization, and Risk Control at Scale
+规模化支付路由、可靠性、成本优化与风险控制
 
-### Book Positioning
+### 本书定位
 
-Designing Modern Payment Systems is a practical system design book about building modern payment infrastructure, with payment routing as the central system. The book explains how payment platforms route transactions across PSPs, acquirers, payment methods, regions, currencies, cost models, risk signals, and reliability constraints.
+《设计现代支付系统》是一本围绕现代支付基础设施展开的实用系统设计书，以支付路由系统为主线，解释支付平台如何在支付服务商、收单机构、支付方式、区域、币种、成本模型、风险信号和可靠性约束之间选择交易路径。
 
-### Target Readers
+### 目标读者
 
-The primary readers are backend engineers, payment engineers, fintech architects, infrastructure engineers, and technical product managers who want to understand how modern payment routing systems are designed.
+主要读者是希望理解现代支付路由系统设计的后端工程师、支付工程师、金融科技架构师、基础设施工程师和技术产品经理。
 
-The reader is expected to understand basic backend systems, APIs, databases, queues, and distributed systems concepts. Prior payment experience is helpful but not required.
+读者应了解基本后端系统、API、数据库、队列和分布式系统概念。有支付经验会有所帮助，但并非必需。
 
-### Core Promise
+### 核心目标
 
-After reading this book, the reader should be able to design a payment routing system that is reliable, observable, cost-aware, risk-aware, and scalable across multiple payment providers and markets.
+读完本书，读者应能设计一个可靠、可观测、具备成本与风险意识，并能扩展到多个支付服务商和市场的支付路由系统。
 
-### Core System
+### 核心系统
 
-The central system in this book is the Payment Routing System. It receives a payment request and decides where and how the transaction should be processed.
+本书的核心是支付路由系统。它接收支付请求，决定交易应由哪条路径、以何种方式处理。
 
-A routing decision may consider provider availability, payment method, card brand, issuer country, merchant configuration, transaction amount, currency, cost, historical success rate, risk signals, compliance constraints, latency, and fallback options.
+路由决策可以考虑服务商可用性、支付方式、卡品牌、发卡国家、商户配置、交易金额、币种、成本、历史成功率、风险信号、合规约束、延迟和后备选项。
 
-### Scope
+### 范围
 
-This book covers payment routing, PSP integration, payment lifecycle, rule-based routing, cost-aware routing, risk-based routing, retries, fallbacks, observability, reconciliation, settlement implications, experimentation, and global payment infrastructure.
+本书覆盖支付路由、PSP 集成、支付生命周期、基于规则的路由、成本感知路由、风险感知路由、重试、后备路由、可观测性、对账、结算影响、实验和全球支付基础设施。
 
-### Non-Goals
+### 非目标
 
-This book is not a general introduction to consumer payments, a legal compliance manual, a PCI implementation checklist, or a complete accounting textbook. Topics such as PCI, ledger design, settlement, and reconciliation are covered only to the extent that they influence payment routing system design.
+本书不是面向消费者的通用支付入门、法律合规手册、PCI 实施清单或完整会计教材。PCI、账本设计、结算与对账仅在影响支付路由系统设计的范围内展开。
 
-### Writing Principles
+### 写作原则
 
-Each chapter should connect domain concepts with system design decisions.
+每章都应把领域概念与系统设计决策联系起来。
 
-Each major concept should answer four questions:
+每个主要概念都应回答四个问题：
 
-1. What problem does this solve?
-2. What can go wrong?
-3. What does a simple design look like?
-4. How does the design evolve at scale?
+1. 它解决什么问题？
+2. 什么可能出错？
+3. 简单设计是什么样的？
+4. 设计如何随规模演进？
 
-The book should prefer concrete architecture, data models, state machines, failure modes, and operational trade-offs over abstract explanations.
+本书优先使用具体架构、数据模型、状态机、故障模式和运营权衡，而非抽象说明。

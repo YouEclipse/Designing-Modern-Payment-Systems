@@ -1,5 +1,7 @@
 # 附录 A 支付意图、支付尝试与服务商请求状态模型
 
+**中文** | [English](../en/appendices/payment-state-models.md)
+
 凌晨两点，值班工程师同时看到三条记录：订单显示支付处理中，服务商查询显示已收款，内部任务显示请求超时。它们不一定相互矛盾。订单读取的是支付意图投影，服务商描述的是资金操作，任务记录的是一次传输。真正危险的是把三者都写入同一列 `payment_status`，再用最后到达的消息覆盖前面的事实。
 
 本附录为[第 1 章](../part-1-foundations/payment-lifecycle.md)、[第 10～12 章](../part-3-reliability/timeout-and-retry.md)和[第 17 章](../part-4-operating-at-scale/reconciliation.md)提供同一份状态参考。正文中的服务商请求泛指对外请求；配套代码的逻辑资金对象统一叫 `ProviderOperation`。一次支付操作可以产生多次 HTTP 请求，但这些请求不能因此获得多个资金身份。
